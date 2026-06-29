@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A.L.A DECOR - Orçamento</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple: #231a72;
+    --purple-dark: #160f52;
+    --purple-mid: #2e2490;
+    --orange: #e8892a;
+    --orange-lite: #f5a04a;
+    --cream: #f0eadf;
+    --white: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #dde3ec;
+    --row-alt: #f4f2ff;
+    --bg: #f0f0f8;
+    --green: #16803c;
+  }
+
+  body {
+    font-family: "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 16px 60px;
+  }
+
+  .container { max-width: 880px; margin: 0 auto; }
+
+  .header {
+    background: var(--purple);
+    border-radius: 16px;
+    padding: 30px 34px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: 0 8px 32px rgba(35,26,114,.28);
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 14px; }
+  .logo-img { width: 120px; height: 120px; object-fit: contain; border-radius: 6px; }
+  .logo-roof { width: 56px; height: 28px; margin-bottom: 4px; margin-left: 8px; }
+
+  .logo-name {
+    font-family: Georgia, serif;
+    font-size: 38px;
+    font-weight: 900;
+    color: var(--cream);
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+
+  .logo-divider { width: 90%; height: 1px; background: rgba(255,255,255,.35); margin: 6px 0 5px; }
+
+  .logo-tagline {
+    font-size: 12px;
+    color: rgba(255,255,255,.7);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .header-right { text-align: right; }
+  .header-contact { color: rgba(255,255,255,.72); font-size: 12px; line-height: 1.9; }
+  .header-contact strong { color: var(--orange-lite); font-size: 13px; }
+  .version-tag {
+    display: inline-block;
+    margin-top: 10px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    color: rgba(255,255,255,.72);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(35,26,114,.08);
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--purple);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--orange);
+    margin-bottom: 20px;
+  }
+
+  .warning {
+    background: #fffbeb;
+    border-left: 4px solid var(--orange);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #78350f;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  input[type="text"], input[type="number"], input[type="date"], select {
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    background: #fafbfc;
+    min-height: 45px;
+  }
+
+  input:focus, select:focus { border-color: var(--purple); outline: none; background: #fff; }
+  .hint { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .section-sep {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+
+  .section-sep::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+  .price-ref-grid {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .price-ref {
+    background: #f4f2ff;
+    border: 1px solid #c4b8f5;
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .price-ref strong { display: block; font-size: 16px; font-weight: 800; color: var(--purple); }
+  .price-ref span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .is-hidden { display: none !important; }
+
+  .actions-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
+
+  button {
+    min-height: 46px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    border: 0;
+  }
+
+  .btn-calc { width: 100%; background: var(--orange); color: var(--white); text-transform: uppercase; letter-spacing: 1px; }
+  .btn-calc:hover { background: var(--orange-lite); }
+  .btn-print { background: transparent; border: 2px solid var(--purple); color: var(--purple); padding: 10px 18px; }
+  .btn-print:hover { background: var(--purple); color: #fff; }
+  .btn-reset { background: transparent; border: 2px solid var(--muted); color: var(--muted); padding: 10px 18px; }
+  .btn-whatsapp { background: var(--green); color: #fff; padding: 10px 18px; }
+  .btn-small { min-height: 36px; padding: 8px 12px; font-size: 12px; }
+  .btn-danger { background: transparent; border: 2px solid #dc2626; color: #dc2626; }
+
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .history-list { display: grid; gap: 10px; }
+  .history-empty { color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .history-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    background: #fff;
+  }
+  .history-title { font-family: Georgia, serif; color: var(--purple); font-weight: 700; }
+  .history-meta { color: var(--muted); font-size: 12px; margin-top: 3px; line-height: 1.4; }
+  .history-value { color: var(--text); font-weight: 800; margin-top: 5px; }
+  .history-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .res-client-name { font-family: Georgia, serif; font-size: 20px; font-weight: 700; color: var(--purple); }
+  .res-address, .res-date { color: var(--muted); font-size: 13px; margin-top: 3px; }
+  .res-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+  .chip { background: #f4f2ff; border: 1px solid #c4b8f5; border-radius: 8px; padding: 10px 16px; }
+  .chip-lbl { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+  .chip-val { font-family: Georgia, serif; font-size: 18px; font-weight: 700; color: var(--purple); margin-top: 2px; }
+
+  .summary-box {
+    border: 2px solid var(--purple);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .summary-box span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; }
+  .summary-box strong { display: block; font-family: Georgia, serif; color: var(--purple); font-size: 30px; margin-top: 4px; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    background: var(--purple);
+    color: #fff;
+    padding: 13px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  tbody td { padding: 13px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .mat-name { font-family: Georgia, serif; font-weight: 700; font-size: 14px; }
+  .mat-brand { display: inline-block; background: #ede8ff; color: var(--purple-mid); padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; margin-top: 4px; }
+  .qty-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  .table-note {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #f4f2ff;
+    border-radius: 8px;
+    line-height: 1.6;
+    border-left: 3px solid var(--purple-mid);
+  }
+
+  .print-observations {
+    margin-top: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    line-height: 1.5;
+  }
+
+  .print-observations strong {
+    display: block;
+    color: var(--purple);
+    font-size: 12px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  .print-observations p {
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .footer { margin-top: 32px; text-align: center; font-size: 12px; color: var(--muted); }
+  .footer a { color: var(--purple); text-decoration: none; font-weight: 600; }
+  .premium-print { display: none; }
+
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: #fff; padding: 0; font-size: 11px; }
+    body * { visibility: hidden; }
+    .premium-print, .premium-print * { visibility: visible; }
+    .premium-print {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #fff;
+      color: var(--text);
+      font-family: "Segoe UI", sans-serif;
+    }
+    .premium-top {
+      background: var(--purple);
+      color: #fff;
+      padding: 34px 58px 28px;
+      display: grid;
+      grid-template-columns: 1fr 1.35fr;
+      gap: 34px;
+      align-items: center;
+      border-bottom: 4px solid var(--orange);
+    }
+    .premium-logo { width: 220px; max-height: 120px; object-fit: contain; }
+    .premium-company { text-align: right; line-height: 1.7; font-size: 13px; color: rgba(255,255,255,.78); }
+    .premium-company strong { display: block; color: #fff; font-size: 16px; margin-bottom: 12px; }
+    .premium-body { padding: 28px 58px 22px; }
+    .premium-grid { width: 100%; border-collapse: collapse; margin-bottom: 14px; border-top: 3px solid var(--purple); }
+    .premium-grid th { text-align: left; color: var(--muted); background: #f8f8fb; padding: 9px 12px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; }
+    .premium-grid td { padding: 11px 12px; border: 1px solid var(--border); font-size: 14px; font-weight: 700; }
+    .premium-section-title { background: #eeeafd; color: var(--purple); font-weight: 800; text-transform: uppercase; padding: 10px 12px; margin: 16px auto 0; width: 92%; }
+    .premium-service { width: 92%; margin: 0 auto 16px; border-collapse: collapse; }
+    .premium-service th { background: var(--purple); color: #fff; padding: 11px 12px; text-align: left; font-size: 12px; text-transform: uppercase; }
+    .premium-service th.right, .premium-service td.right { text-align: right; }
+    .premium-service td { padding: 14px 12px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    .premium-desc { line-height: 1.55; }
+    .premium-total { margin-top: 14px; border-top: 3px solid var(--orange); background: var(--purple); color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; font-weight: 900; font-size: 19px; text-transform: uppercase; }
+    .premium-total strong { color: var(--orange-lite); font-size: 28px; }
+    .premium-pay { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+    .premium-pay th { background: #f8f8fb; color: var(--muted); padding: 9px 12px; border: 1px solid var(--border); text-align: left; text-transform: uppercase; }
+    .premium-pay td { border: 1px solid var(--border); padding: 15px 14px; font-size: 14px; text-align: center; line-height: 1.45; width: 33.33%; }
+    .premium-pay .pix { background: #fff; color: var(--purple); font-weight: 900; font-size: 16px; }
+    .premium-obs { border: 1px solid var(--border); margin-top: 16px; }
+    .premium-obs strong { display: block; background: #f8f8fb; padding: 9px 12px; color: var(--muted); text-transform: uppercase; }
+    .premium-obs p { padding: 10px 12px; line-height: 1.7; font-size: 13px; }
+    .premium-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin: 46px 90px 0; text-align: center; color: var(--purple); }
+    .premium-sign div { border-top: 1px solid var(--text); padding-top: 12px; font-size: 13px; }
+    .premium-footer { position: fixed; bottom: 0; left: 0; right: 0; border-top: 3px solid var(--orange); background: #f1efff; color: var(--purple); padding: 12px 58px; display: flex; justify-content: space-between; font-size: 11px; }
+    .input-section, .header, .results > :not(.premium-print), .footer { display: none !important; }
+    /*
+    .results { display: block !important; }
+    .container { max-width: none; margin: 0; }
+    .header {
+      display: flex !important;
+      border-radius: 0;
+      box-shadow: none;
+      margin: 0 0 8px;
+      padding: 12px 16px;
+      break-inside: avoid;
+    }
+    .logo-img { width: 74px; height: 74px; }
+    .logo-name, .logo-roof, .logo-divider, .logo-tagline { display: none !important; }
+    .header-contact { font-size: 9px; line-height: 1.55; }
+    .header-contact strong { font-size: 10px; }
+    .version-tag { font-size: 8px; margin-top: 5px; padding: 2px 7px; border-radius: 5px; }
+    .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; margin: 0; padding: 12px; border-radius: 6px; }
+    .results-header { margin-bottom: 10px; gap: 8px; }
+    .res-client-name { font-size: 17px; }
+    .res-address, .res-date { font-size: 10px; margin-top: 2px; }
+    .summary-box { padding: 10px 12px; margin-bottom: 10px; border-width: 1px; gap: 10px; }
+    .summary-box span { font-size: 9px; }
+    .summary-box strong { font-size: 24px; }
+    .summary-box .hint { font-size: 9px; max-width: 300px; }
+    table { font-size: 10.5px; }
+    thead th { padding: 8px 10px; font-size: 9px; }
+    tbody td { padding: 7px 10px; }
+    .mat-name { font-size: 11px; }
+    .mat-brand { font-size: 8px; padding: 1px 6px; border-radius: 6px; }
+    .qty-sub { font-size: 9px; margin-top: 1px; }
+    .print-observations { margin-top: 9px; padding: 8px 10px; line-height: 1.35; }
+    .print-observations strong { font-size: 9px; margin-bottom: 4px; }
+    .print-observations p { font-size: 9.5px; }
+    */
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 14px 10px 48px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .header { flex-direction: column; text-align: center; align-items: center; padding: 24px 18px; }
+    .header-right { text-align: center; }
+    .logo-block { align-items: center; }
+    .logo-img { width: 112px; height: 112px; }
+    .logo-name { font-size: 30px; }
+    .results-header { flex-direction: column; }
+    .summary-box { align-items: flex-start; flex-direction: column; }
+    .summary-box strong { font-size: 26px; }
+    .history-item { grid-template-columns: 1fr; }
+    .history-actions { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo-block">
+      <img class="logo-img" src="assets/logo-ala-decor-transparente.png" alt="A.L.A DECOR - Pisos Vinílicos e Laminados">
+    </div>
+    <div class="header-right">
+      <div class="header-contact">
+        <strong>(11) 97780-3209</strong><br>
+        @a.l.a_decoracoes<br>
+        Sistema de Orçamento
+      </div>
+      <div class="version-tag">LAMINADO E VINÍLICO</div>
+    </div>
+  </div>
+
+  <div class="card input-section">
+    <div class="card-title">Dados da Obra</div>
+    <div class="warning">
+      Insira as medidas manualmente com base na planta. O cliente recebe apenas o resumo do orçamento, sem os preços unitários de cada material.
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome do Cliente</label>
+        <input type="text" id="cliente" placeholder="Ex: João da Silva" required>
+      </div>
+      <div class="form-group">
+        <label>Endereço da Obra</label>
+        <input type="text" id="endereco" placeholder="Ex: Rua das Flores, 123 - Apto 42" required>
+      </div>
+      <div class="form-group">
+        <label>Telefone do Cliente</label>
+        <input type="text" id="telefone" placeholder="Ex: (11) 99999-9999" required>
+      </div>
+      <div class="form-group">
+        <label>CPF ou CNPJ</label>
+        <input type="text" id="documento" placeholder="Ex: 000.000.000-00" required>
+      </div>
+      <div class="form-group">
+        <label>Número do Orçamento</label>
+        <input type="text" id="orcamento_numero" placeholder="Ex: 34" required>
+      </div>
+      <div class="form-group">
+        <label>Válido Até</label>
+        <input type="date" id="validade" required>
+      </div>
+      <div class="section-sep">Tipo de Piso</div>
+      <div class="form-group">
+        <label>Tipo de Piso</label>
+        <select id="tipo_piso" onchange="atualizarTipoPiso()">
+          <option value="laminado">Piso Laminado</option>
+          <option value="vinilico">Piso Vinílico</option>
+        </select>
+      </div>
+      <div class="form-group conditional-field" id="campo_marca_laminado">
+        <label>Marca / Linha do Laminado</label>
+        <select id="marca_laminado" onchange="atualizarTipoPiso()">
+          <option value="eucafloor_prime_click">Eucafloor Prime Click 8mm - 2,36 m²/cx</option>
+          <option value="durafloor_new_way">Durafloor New Way 7mm - 2,51 m²/cx</option>
+          <option value="durafloor_new_nature">Durafloor New Nature 7mm - 2,51 m²/cx</option>
+          <option value="durafloor_studio">Durafloor Studio 8mm - 2,26 m²/cx</option>
+          <option value="quick_step_new_premiere">Quick-Step New Premiere AC4 - 2,84 m²/cx</option>
+          <option value="quick_step_new_smart">Quick-Step New Smart AC4 - 2,51 m²/cx</option>
+        </select>
+      </div>
+      <div class="form-group conditional-field is-hidden" id="campo_marca_vinilico">
+        <label>Marca / Linha do Vinílico</label>
+        <select id="marca_vinilico" onchange="atualizarTipoPiso()">
+          <option value="ecomax_ecohome">Ecomax Eco Home Colado 2mm - 4,4593 m²/cx</option>
+          <option value="durafloor_urban">Durafloor Urban Colado 2mm - 4,34 m²/cx</option>
+          <option value="durafloor_city">Durafloor City Colado 3mm - 3,25 m²/cx</option>
+          <option value="tarkett_injoy">Tarkett Ínjoy 2mm - 4,09 m²/cx</option>
+          <option value="tarkett_essence_30">Tarkett Essence 30 - 4,09 m²/cx</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Preço da Caixa do Piso (R$)</label>
+        <input type="number" id="piso_preco_cx" placeholder="Ex: 111,60" min="0" step="0.01" required>
+        <span class="hint">Use o valor atual da caixa da marca escolhida.</span>
+      </div>
+      <div class="section-sep">Medidas da Planta</div>
+      <div class="form-group">
+        <label>Área Total do Piso (m²) *</label>
+        <input type="number" id="area" placeholder="Ex: 30" min="1" step="0.5" required>
+        <span class="hint">Soma de todos os cômodos que receberão o piso escolhido.</span>
+      </div>
+      <div class="form-group is-hidden" id="campo_perimetro">
+        <label>Perímetro Total (metros lineares)</label>
+        <input type="number" id="perimetro" placeholder="Ex: 28 - ou deixe vazio" min="1" step="0.5">
+        <span class="hint">Soma das paredes com rodapé. Vazio = usa a área como estimativa.</span>
+      </div>
+      <div class="form-group" id="campo_portas">
+        <label>Número de Portas</label>
+        <input type="number" id="portas" placeholder="Ex: 3" min="0" value="0">
+        <span class="hint">Cada porta usa 1 perfil T de 1,8 m.</span>
+      </div>
+      <div class="form-group">
+        <label>Mão de Obra (R$ / m²)</label>
+        <input type="number" id="mao_obra" placeholder="Ex: 35" min="0" step="0.50">
+        <span class="hint">Valor cobrado por m² de instalação.</span>
+      </div>
+
+      <div class="section-sep">Preços internos</div>
+      <div class="price-ref-grid">
+        <div class="price-ref"><strong>Laminado</strong><span>Eucafloor, Durafloor e Quick-Step com preços dos catálogos</span></div>
+        <div class="price-ref"><strong>Vinílico</strong><span>Ecomax, Durafloor e Tarkett com preços dos catálogos</span></div>
+        <div class="price-ref"><strong>R$ 10,56</strong><span>Madebene Supreme 5cm Branco<br>2,16 ml por barra</span></div>
+        <div class="price-ref"><strong>R$ 59,00</strong><span>Autonivelante Protec 20kg<br>base: 1 saco a cada 3 m²</span></div>
+        <div class="price-ref"><strong>R$ 86,00</strong><span>Primer Protec<br>base: 1 balde a cada 30 m²</span></div>
+        <div class="price-ref"><strong>R$ 28,00</strong><span>Cola para rodapé / pote</span></div>
+        <div class="price-ref"><strong>R$ 15,00</strong><span>Prego 10x11 / pacote<br>1 pacote a cada 30 m²</span></div>
+        <div class="price-ref"><strong>R$ 160,00</strong><span>Frete fixo</span></div>
+      </div>
+    </div>
+    <div class="actions-row">
+      <button class="btn-calc" onclick="calcular()">Gerar Orçamento</button>
+    </div>
+  </div>
+
+  <div class="card input-section">
+    <div class="card-title">Orçamentos Salvos</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <div class="card results" id="results">
+    <div class="premium-print" id="premium-print">
+      <div class="premium-top">
+        <div>
+          <img class="premium-logo" src="assets/logo-ala-decor-transparente.png" alt="A.L.A DECOR">
+        </div>
+        <div class="premium-company">
+          <strong>A.L.A Decor Pisos Laminados e Vinílicos</strong>
+          CNPJ: 41.374.458/0001-98<br>
+          Rua Bauru, 129 Jardim do Carmo - Itaquaquecetuba/SP<br>
+          (11) 97780-3209 &nbsp; | &nbsp; @a.l.a_decoracoes<br>
+          a.l.a_decoracoes2025@gmail.com
+        </div>
+      </div>
+
+      <div class="premium-body">
+        <table class="premium-grid">
+          <tr>
+            <th>Orçamento Nº</th>
+            <th>Emitido Em</th>
+            <th>Válido Até</th>
+          </tr>
+          <tr>
+            <td id="print-numero">-</td>
+            <td id="print-emissao">-</td>
+            <td id="print-validade" style="color: var(--orange);">-</td>
+          </tr>
+        </table>
+
+        <table class="premium-grid">
+          <tr>
+            <th>Cliente</th>
+            <th>Telefone</th>
+          </tr>
+          <tr>
+            <td id="print-cliente">-</td>
+            <td id="print-telefone">-</td>
+          </tr>
+          <tr>
+            <th colspan="2">Endereço</th>
+          </tr>
+          <tr>
+            <td colspan="2" id="print-endereco">-</td>
+          </tr>
+        </table>
+
+        <div class="premium-section-title">Serviço</div>
+        <table class="premium-service">
+          <thead>
+            <tr>
+              <th>Descrição do Serviço</th>
+              <th class="right">Qtd</th>
+              <th>Unid.</th>
+              <th class="right">Preço/m²</th>
+              <th class="right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="premium-desc" id="print-servico">-</td>
+              <td class="right" id="print-qtd">-</td>
+              <td>m²</td>
+              <td class="right" id="print-m2">-</td>
+              <td class="right" id="print-total-linha">-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="premium-total">
+          <span>Total do Projeto</span>
+          <strong id="print-total">R$ 0,00</strong>
+        </div>
+
+        <div class="premium-section-title">Condições de Pagamento</div>
+        <table class="premium-pay">
+          <tr>
+            <th>À Vista - Pix</th>
+            <th>Parcelado</th>
+            <th>Entrada + Conclusão</th>
+          </tr>
+          <tr>
+            <td class="pix"><span id="print-pix">R$ 0,00</span></td>
+            <td>Parcelamento em até 12x no cartão de crédito com a taxa do próprio cartão.</td>
+            <td>60% do valor como sinal de confirmação da obra + restante no término do serviço.</td>
+          </tr>
+        </table>
+
+        <div class="premium-sign">
+          <div>A.L.A DECOR Pisos Laminados e Vinílicos</div>
+          <div id="print-assinatura-cliente">Cliente</div>
+        </div>
+      </div>
+
+      <div class="premium-footer">
+        <span>A.L.A DECOR - Pisos Vinílicos e Laminados · (11) 97780-3209 · @a.l.a_decoracoes</span>
+        <span>Pág. 1</span>
+      </div>
+    </div>
+
+    <div class="results-header">
+      <div>
+        <div class="res-client-name" id="res-nome">-</div>
+        <div class="res-address" id="res-orcamento">-</div>
+        <div class="res-address" id="res-end">-</div>
+        <div class="res-address" id="res-contato">-</div>
+        <div class="res-date" id="res-data">-</div>
+      </div>
+      <div class="res-actions">
+        <button class="btn-reset" onclick="resetar()">Novo</button>
+        <button class="btn-whatsapp" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
+        <button class="btn-print" onclick="window.print()">Imprimir / PDF</button>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="summary-box">
+      <div>
+        <span>Valor total estimado</span>
+        <strong id="valor-total">R$ 0,00</strong>
+      </div>
+      <p class="hint">Orçamento com materiais, frete e instalação calculados conforme as medidas informadas.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item incluso</th>
+            <th>Quantidade calculada</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="print-observations">
+      <strong>Observações</strong>
+      <p>Parcelamos em até 12x no cartão de crédito com a taxa do próprio cartão. Pedimos 60% do valor como sinal de confirmação da obra. Instalação rápida - de 1 a 2 dias.</p>
+    </div>
+    <div class="table-note" id="table-note"></div>
+  </div>
+
+  <div class="footer">
+    A.L.A DECOR - Pisos Vinílicos e Laminados -
+    <a href="tel:11977803209">(11) 97780-3209</a> -
+    <a href="https://instagram.com/a.l.a_decoracoes" target="_blank">@a.l.a_decoracoes</a>
+  </div>
+</div>
+
+<script>
+const PRECO = {
+  laminado_preco_cx: 111.60,
+  laminado_m2_cx: 2.36,
+  vinilico_m2_cx: 4.45,
+  piso_perda: 0.10,
+  rod_preco: 10.56,
+  rod_ml: 2.16,
+  rod_extra_vinilico: 2,
+  manta_preco: 7.50,
+  manta_m2_rolo: 10,
+  perfil_preco: 44.80,
+  cola_preco: 28.00,
+  cola_cob: 30,
+  prego_preco: 15.00,
+  prego_cob: 30,
+  autonivelante_preco: 59.00,
+  autonivelante_cob: 3,
+  primer_preco: 86.00,
+  primer_cob: 30,
+  frete: 160.00,
+};
+
+const PRODUTOS = {
+  laminado: {
+    eucafloor_prime_click: {nome: "Piso Laminado Prime Click 8mm", marca: "Eucafloor", m2cx: 2.36, precoCx: 111.60},
+    durafloor_new_way: {nome: "Piso Laminado New Way 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 123.00},
+    durafloor_new_nature: {nome: "Piso Laminado New Nature 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 155.00},
+    durafloor_studio: {nome: "Piso Laminado Studio 8mm", marca: "Durafloor", m2cx: 2.26, precoCx: 169.00},
+    quick_step_new_premiere: {nome: "Piso Laminado New Premiere AC4", marca: "Quick-Step", m2cx: 2.84, precoCx: 156.33},
+    quick_step_new_smart: {nome: "Piso Laminado New Smart AC4", marca: "Quick-Step", m2cx: 2.51, precoCx: 185.00},
+  },
+  vinilico: {
+    ecomax_ecohome: {nome: "Piso Vinílico Eco Home Colado 2mm", marca: "Ecomax", m2cx: 4.4593, precoCx: 205.00},
+    durafloor_urban: {nome: "Piso Vinílico Urban Colado 2mm", marca: "Durafloor", m2cx: 4.34, precoCx: 368.00},
+    durafloor_city: {nome: "Piso Vinílico City Colado 3mm", marca: "Durafloor", m2cx: 3.25, precoCx: 404.80},
+    tarkett_injoy: {nome: "Piso Vinílico Ínjoy 2mm", marca: "Tarkett", m2cx: 4.09, precoCx: 260.34},
+    tarkett_essence_30: {nome: "Piso Vinílico Essence 30", marca: "Tarkett", m2cx: 4.09, precoCx: 403.14},
+  }
+};
+
+let ultimoOrcamento = null;
+const HISTORICO_KEY = "alaDecorOrcamentos";
+
+function fmt(v) {
+  return "R$ " + v.toLocaleString("pt-BR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function hojeISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function dataBR(valorISO) {
+  if (!valorISO) return "";
+  const partes = valorISO.split("-");
+  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : valorISO;
+}
+
+function getProdutoSelecionado() {
+  const tipo = document.getElementById("tipo_piso").value;
+  const campo = tipo === "vinilico" ? "marca_vinilico" : "marca_laminado";
+  const chave = document.getElementById(campo).value;
+  return {tipo, chave, produto: PRODUTOS[tipo][chave]};
+}
+
+function arredondarQtd(valor) {
+  return valor && valor > 0 ? Math.ceil(valor) : 0;
+}
+
+function atualizarTipoPiso() {
+  const {tipo, produto} = getProdutoSelecionado();
+  document.getElementById("campo_marca_laminado").classList.toggle("is-hidden", tipo !== "laminado");
+  document.getElementById("campo_marca_vinilico").classList.toggle("is-hidden", tipo !== "vinilico");
+  document.getElementById("campo_perimetro").classList.add("is-hidden");
+  document.getElementById("campo_portas").classList.toggle("is-hidden", tipo === "vinilico");
+  document.getElementById("perimetro").value = "";
+  if (tipo === "vinilico") document.getElementById("portas").value = 0;
+  document.getElementById("piso_preco_cx").value = produto.precoCx.toFixed(2);
+}
+
+function carregarHistorico() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORICO_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarHistorico(lista) {
+  localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista.slice(0, 50)));
+}
+
+function salvarOrcamento(orcamento) {
+  const lista = carregarHistorico();
+  const existente = lista.findIndex(item => item.id === orcamento.id);
+
+  if (existente >= 0) {
+    lista[existente] = orcamento;
+  } else {
+    lista.unshift(orcamento);
+  }
+
+  salvarHistorico(lista);
+  renderizarHistorico();
+}
+
+function montarMensagemWhatsApp(o) {
+  return [
+    "Olá! Segue orçamento A.L.A DECOR.",
+    "",
+    "Cliente: " + o.cliente,
+    "Orçamento nº: " + o.orcamentoNumero,
+    "Válido até: " + dataBR(o.validade),
+    "Endereço: " + o.endereco,
+    "Telefone: " + o.telefone,
+    "CPF/CNPJ: " + o.documento,
+    "Área: " + o.area.toFixed(1) + " m²",
+    "Tipo: " + (o.tipoLabel || "Piso Laminado"),
+    "Produto: " + (o.produtoNome || "Piso Laminado"),
+    "Piso: " + o.caixas + " caixas",
+    "Rodapé: " + o.barras + " barras",
+    o.tipo === "vinilico" ? "Autonivelante: " + o.sacosAutonivelante + " sacos" : "Manta: " + o.rolosManta + " rolo" + (o.rolosManta > 1 ? "s" : ""),
+    o.tipo === "vinilico" ? "Primer: " + o.baldesPrimer + " balde" + (o.baldesPrimer > 1 ? "s" : "") : "",
+    o.portas > 0 ? "Perfis de porta: " + o.portas + " unid." : "",
+    "",
+    "Valor total estimado: " + fmt(o.totalGeral),
+    "",
+    "Observações:",
+    "Parcelamos em até 12x no cartão de crédito com a taxa do próprio cartão. Pedimos 60% do valor como sinal de confirmação da obra. Instalação rápida - de 1 a 2 dias.",
+    "",
+    "A.L.A DECOR - Pisos Vinílicos e Laminados",
+    "(11) 97780-3209"
+  ].filter(Boolean).join("\n");
+}
+
+function abrirWhatsAppComOrcamento(id) {
+  const lista = carregarHistorico();
+  const orcamento = lista.find(item => item.id === id);
+  if (!orcamento) return;
+  window.open("https://wa.me/?text=" + encodeURIComponent(montarMensagemWhatsApp(orcamento)), "_blank");
+}
+
+function preencherImpressaoPremium(o) {
+  const servicoPrint = o.tipo === "vinilico"
+    ? [
+        o.produtoNome || "Piso Vinílico",
+        "Rodapé de 5 cm",
+        "Autonivelante",
+        "Primer",
+        "Cola para rodapé",
+        "Prego",
+        "Mão de obra e material tudo incluso instalado."
+      ]
+    : [
+        o.produtoNome || "Piso Laminado",
+        "Rodapé de 5 cm",
+        "Manta",
+        "Prego",
+        o.portas > 0 ? "Perfil de porta" : "",
+        "Mão de obra e material tudo incluso instalado."
+      ].filter(Boolean);
+
+  document.getElementById("print-numero").textContent = o.orcamentoNumero;
+  document.getElementById("print-emissao").textContent = (o.criadoEm || "").split(",")[0] || new Date().toLocaleDateString("pt-BR");
+  document.getElementById("print-validade").textContent = dataBR(o.validade);
+  document.getElementById("print-cliente").textContent = o.cliente;
+  document.getElementById("print-telefone").textContent = o.telefone;
+  document.getElementById("print-endereco").textContent = o.endereco;
+  document.getElementById("print-servico").innerHTML = servicoPrint.join("<br>");
+  document.getElementById("print-qtd").textContent = o.area.toLocaleString("pt-BR", {maximumFractionDigits: 2});
+  document.getElementById("print-m2").textContent = fmt(o.totalGeral / o.area);
+  document.getElementById("print-total-linha").textContent = fmt(o.totalGeral);
+  document.getElementById("print-total").textContent = fmt(o.totalGeral);
+  document.getElementById("print-pix").textContent = fmt(o.totalGeral);
+  document.getElementById("print-assinatura-cliente").textContent = o.cliente;
+}
+
+function imprimirOrcamentoSalvo(id) {
+  const lista = carregarHistorico();
+  const orcamento = lista.find(item => item.id === id);
+  if (!orcamento) return;
+  ultimoOrcamento = orcamento;
+  preencherImpressaoPremium(orcamento);
+  document.getElementById("results").classList.add("visible");
+  setTimeout(() => window.print(), 50);
+}
+
+function apagarOrcamento(id) {
+  if (!confirm("Apagar este orçamento salvo?")) return;
+  salvarHistorico(carregarHistorico().filter(item => item.id !== id));
+  renderizarHistorico();
+}
+
+function renderizarHistorico() {
+  const alvo = document.getElementById("history-list");
+  const lista = carregarHistorico();
+
+  if (!lista.length) {
+    alvo.innerHTML = '<div class="history-empty">Nenhum orçamento salvo ainda. Ao gerar um orçamento, ele aparece aqui automaticamente neste aparelho.</div>';
+    return;
+  }
+
+  alvo.innerHTML = lista.map(item => `
+    <div class="history-item">
+      <div>
+        <div class="history-title">${item.cliente}</div>
+        <div class="history-meta">Orçamento nº ${item.orcamentoNumero} - ${item.tipoLabel || "Piso Laminado"} - ${item.area.toFixed(1)} m² - ${item.criadoEm}</div>
+        <div class="history-meta">${item.produtoNome || "Piso Laminado"}</div>
+        <div class="history-meta">${item.telefone} - válido até ${dataBR(item.validade)}</div>
+        <div class="history-value">${fmt(item.totalGeral)}</div>
+      </div>
+      <div class="history-actions">
+        <button class="btn-print btn-small" onclick="imprimirOrcamentoSalvo('${item.id}')">PDF</button>
+        <button class="btn-whatsapp btn-small" onclick="abrirWhatsAppComOrcamento('${item.id}')">WhatsApp</button>
+        <button class="btn-danger btn-small" onclick="apagarOrcamento('${item.id}')">Apagar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function prepararCamposIniciais() {
+  const validade = document.getElementById("validade");
+  const numero = document.getElementById("orcamento_numero");
+  const hoje = new Date();
+  const validadePadrao = new Date(hoje);
+  validadePadrao.setDate(hoje.getDate() + 7);
+
+  if (!validade.value) validade.value = validadePadrao.toISOString().slice(0, 10);
+  if (!numero.value) numero.value = String(Math.floor(100000 + Math.random() * 900000));
+  atualizarTipoPiso();
+}
+
+function validarObrigatorios() {
+  const campos = [
+    ["cliente", "nome do cliente"],
+    ["endereco", "endereço da obra"],
+    ["telefone", "telefone do cliente"],
+    ["documento", "CPF ou CNPJ"],
+    ["orcamento_numero", "número do orçamento"],
+    ["validade", "validade do orçamento"],
+    ["piso_preco_cx", "preço da caixa do piso"],
+    ["area", "área total do piso"]
+  ];
+
+  for (const [id, nome] of campos) {
+    const campo = document.getElementById(id);
+    if (!campo.value.trim()) {
+      alert("Informe o campo obrigatório: " + nome + ".");
+      campo.focus();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function calcular() {
+  if (!validarObrigatorios()) return;
+
+  const area = parseFloat(document.getElementById("area").value);
+  const perimRaw = document.getElementById("perimetro").value.trim();
+  const portas = Math.max(0, parseInt(document.getElementById("portas").value) || 0);
+  const {tipo, produto} = getProdutoSelecionado();
+  const tipoLabel = tipo === "vinilico" ? "Piso Vinílico" : "Piso Laminado";
+  const pisoPrecoCx = parseFloat(document.getElementById("piso_preco_cx").value) || produto.precoCx;
+  const cliente = document.getElementById("cliente").value.trim();
+  const endereco = document.getElementById("endereco").value.trim();
+  const telefone = document.getElementById("telefone").value.trim();
+  const documento = document.getElementById("documento").value.trim();
+  const orcamentoNumero = document.getElementById("orcamento_numero").value.trim();
+  const validade = document.getElementById("validade").value;
+
+  if (!area || area <= 0) {
+    alert("Informe a área total do piso (m²) para continuar.");
+    return;
+  }
+
+  const areaComPerda = area * (1 + PRECO.piso_perda);
+  const caixas = arredondarQtd(areaComPerda / produto.m2cx);
+  const totalPiso = caixas * pisoPrecoCx;
+
+  const usandoEstimativa = perimRaw === "";
+  const perimetro = usandoEstimativa ? area : parseFloat(perimRaw);
+  const baseRodape = tipo === "vinilico" ? areaComPerda : perimetro;
+  const barrasBase = arredondarQtd(baseRodape / PRECO.rod_ml);
+  const barrasExtras = tipo === "vinilico" ? PRECO.rod_extra_vinilico : 0;
+  const barras = barrasBase + barrasExtras;
+  const totalRod = barras * PRECO.rod_preco;
+
+  const metrosManta = tipo === "laminado" ? arredondarQtd(area) : 0;
+  const rolosManta = tipo === "laminado" ? arredondarQtd(metrosManta / PRECO.manta_m2_rolo) : 0;
+  const totalManta = metrosManta * PRECO.manta_preco;
+
+  const totalPerfil = tipo === "laminado" ? portas * PRECO.perfil_preco : 0;
+  const potesCola = tipo === "vinilico" ? 1 : arredondarQtd(area / PRECO.cola_cob);
+  const totalCola = potesCola * PRECO.cola_preco;
+  const unidPrego = arredondarQtd(area / PRECO.prego_cob);
+  const totalPrego = unidPrego * PRECO.prego_preco;
+  const sacosAutonivelante = tipo === "vinilico" ? arredondarQtd(area / PRECO.autonivelante_cob) : 0;
+  const totalAutonivelante = sacosAutonivelante * PRECO.autonivelante_preco;
+  const baldesPrimer = tipo === "vinilico" ? arredondarQtd(area / PRECO.primer_cob) : 0;
+  const totalPrimer = baldesPrimer * PRECO.primer_preco;
+  const maoObraValor = parseFloat(document.getElementById("mao_obra").value) || 0;
+  const maoObra = area * maoObraValor;
+
+  const totalGeral = totalPiso + totalRod + totalManta + totalPerfil + totalCola + totalPrego + totalAutonivelante + totalPrimer + PRECO.frete + maoObra;
+
+  ultimoOrcamento = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    criadoEm: new Date().toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"}),
+    cliente,
+    endereco,
+    telefone,
+    documento,
+    orcamentoNumero,
+    validade,
+    tipo,
+    tipoLabel,
+    produtoNome: produto.nome,
+    produtoMarca: produto.marca,
+    area,
+    areaComPerda,
+    perimetro,
+    usandoEstimativa,
+    portas,
+    caixas,
+    barras,
+    metrosManta,
+    rolosManta,
+    potesCola,
+    unidPrego,
+    sacosAutonivelante,
+    baldesPrimer,
+    totalGeral
+  };
+  salvarOrcamento(ultimoOrcamento);
+
+  document.getElementById("res-nome").textContent = "Orçamento - " + cliente;
+  document.getElementById("res-orcamento").textContent = "Orçamento nº " + orcamentoNumero + " - Válido até " + dataBR(validade);
+  document.getElementById("res-end").textContent = endereco;
+  document.getElementById("res-contato").textContent = "Fone: " + telefone + " - CPF/CNPJ: " + documento;
+  document.getElementById("res-data").textContent = "Emitido em " + new Date().toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+  document.getElementById("valor-total").textContent = fmt(totalGeral);
+
+  preencherImpressaoPremium(ultimoOrcamento);
+
+  const chipsData = [
+    {lbl: "Tipo de Piso", val: tipoLabel.replace("Piso ", "")},
+    {lbl: "Área do Projeto", val: area.toFixed(1) + " m²"},
+    {lbl: "Com Perda", val: areaComPerda.toFixed(1) + " m²"},
+    {lbl: "Piso", val: caixas + " cx"},
+    {lbl: "Rodapé", val: barras + " barras"},
+  ];
+
+  if (tipo === "laminado") chipsData.push({lbl: "Manta", val: rolosManta + " rolo" + (rolosManta > 1 ? "s" : "")});
+  if (tipo === "vinilico") chipsData.push({lbl: "Autonivelante", val: sacosAutonivelante + " sacos"});
+  if (portas > 0) chipsData.push({lbl: "Portas", val: portas + " unid."});
+
+  document.getElementById("chips").innerHTML = chipsData.map(c =>
+    `<div class="chip"><div class="chip-lbl">${c.lbl}</div><div class="chip-val">${c.val}</div></div>`
+  ).join("");
+
+  function row(name, brand, qty, sub) {
+    return `<tr>
+      <td><div class="mat-name">${name}</div><span class="mat-brand">${brand}</span></td>
+      <td><div>${qty}</div><div class="qty-sub">${sub}</div></td>
+    </tr>`;
+  }
+
+  const linhas = [
+    row(produto.nome, produto.marca, `${caixas} caixas`, `${areaComPerda.toFixed(1)} m² com perda técnica incluída`),
+    row("Rodapé Supreme 5 cm Branco", "Madebene", `${barras} barras`, tipo === "vinilico" ? `${baseRodape.toFixed(1)} m base + ${barrasExtras} barras extras` : `${perimetro.toFixed(1)} m lineares${usandoEstimativa ? " (estimativa)" : ""}`),
+  ];
+
+  if (tipo === "laminado") {
+    linhas.push(
+      row("Manta Lisa 2mm", "Durafloor", `${metrosManta} metros lineares`, `${rolosManta} rolo${rolosManta > 1 ? "s" : ""}`),
+      row("Perfil T de Porta", "Eucafloor Tecno", `${portas} unidade${portas !== 1 ? "s" : ""}`, "1 barra por porta")
+    );
+  } else {
+    linhas.push(
+      row("Autonivelante Protec 20kg", "Protec", `${sacosAutonivelante} saco${sacosAutonivelante !== 1 ? "s" : ""}`, "Base de 1 saco a cada 3 m²"),
+      row("Primer Protec", "Protec", `${baldesPrimer} balde${baldesPrimer !== 1 ? "s" : ""}`, "Base de 1 balde a cada 30 m²")
+    );
+  }
+
+  linhas.push(
+    row("Cola para Rodapé", "Incluso", `${potesCola} pote${potesCola > 1 ? "s" : ""}`, tipo === "vinilico" ? "1 pote para rodapé" : "Quantidade técnica calculada pela área"),
+    row("Prego 10x11", "Incluso", `${unidPrego} pacote${unidPrego > 1 ? "s" : ""}`, "Quantidade técnica calculada pela área"),
+    row("Frete e instalação", "A.L.A DECOR", "Inclusos", "Conforme medidas informadas")
+  );
+
+  document.getElementById("tbody").innerHTML = linhas.join("");
+
+  document.getElementById("table-note").innerHTML = usandoEstimativa
+    ? "Perímetro não informado: o cálculo do rodapé usou <strong>" + (tipo === "vinilico" ? areaComPerda.toFixed(1) : area.toFixed(1)) + " m</strong> como estimativa."
+    : "Perímetro informado: " + perimetro.toFixed(1) + " m.";
+
+  document.getElementById("results").classList.add("visible");
+  document.getElementById("results").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+function enviarWhatsApp() {
+  if (!ultimoOrcamento) {
+    alert("Gere o orçamento antes de enviar pelo WhatsApp.");
+    return;
+  }
+
+  window.open("https://wa.me/?text=" + encodeURIComponent(montarMensagemWhatsApp(ultimoOrcamento)), "_blank");
+}
+
+function resetar() {
+  document.getElementById("results").classList.remove("visible");
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+prepararCamposIniciais();
+renderizarHistorico();
+</script>
+</body>
+</html>
