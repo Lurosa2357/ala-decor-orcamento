@@ -350,13 +350,33 @@
   .contract-preview-box strong { color: var(--purple); }
   .contract-parties {
     border: 1px solid #c9c9c9;
-    margin: 10px 0;
+    margin: 12px 0;
   }
   .contract-party {
-    padding: 12px;
+    padding: 16px 18px;
     border-bottom: 1px solid #c9c9c9;
+    line-height: 1.55;
   }
   .contract-party:last-child { border-bottom: 0; }
+  .contract-party-title {
+    display: block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .contract-field {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 8px;
+    margin: 4px 0;
+  }
+  .contract-field strong {
+    color: var(--text);
+  }
+  .contract-field span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .contract-field-gap { margin-top: 14px; }
   .contract-list { margin: 8px 0 10px 24px; }
   .contract-list li { margin-bottom: 4px; }
   .contract-payment th, .contract-payment td {
@@ -454,8 +474,11 @@
     .contract-text h3 { font-size: 20px; margin: 22px 0 12px; text-transform: uppercase; }
     .contract-text p { margin-bottom: 10px; }
     .contract-text strong { color: #000; }
-    .contract-text .contract-parties { border: 1px solid #c9c9c9; margin-bottom: 0; }
-    .contract-text .contract-party { padding: 10px 12px; border-bottom: 1px solid #c9c9c9; }
+    .contract-text .contract-parties { border: 1px solid #c9c9c9; margin: 12px 0 0; }
+    .contract-text .contract-party { padding: 13px 14px; border-bottom: 1px solid #c9c9c9; line-height: 1.5; }
+    .contract-text .contract-party-title { margin-bottom: 7px; }
+    .contract-text .contract-field { grid-template-columns: 118px 1fr; gap: 7px; margin: 3px 0; }
+    .contract-text .contract-field-gap { margin-top: 12px; }
     .contract-text .contract-list { margin-left: 28px; }
     .contract-text .contract-payment th, .contract-text .contract-payment td { padding: 7px 9px; font-size: 12px; }
     .contract-sign { display: none; grid-template-columns: 1fr 1fr; gap: 44px; padding: 28px 58px 0; text-align: center; font-size: 12px; }
@@ -1274,11 +1297,26 @@ function dadosContrato() {
 function montarContratoHTML(c) {
   const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
   const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
-  const rgCpf = [c.rg ? "RG: " + esc(c.rg) : "RG:", "CPF/CNPJ: " + esc(c.documento)].join(" | ");
   const escopoHtml = c.escopo.map(item => `<li>${esc(item)};</li>`).join("");
   return [
     `<h3>1. Das Partes</h3>`,
-    `<div class="contract-parties"><div class="contract-party"><strong>CONTRATANTE:</strong><br><strong>Nome:</strong> ${esc(c.cliente)}<br>${rgCpf}<br><strong>Data de Nascimento:</strong> ${esc(nascimentoTexto || "Opcional") }<br><br><strong>Endereco:</strong> ${esc(c.endereco)}<br><strong>Telefone:</strong> ${esc(c.telefone)}</div><div class="contract-party"><strong>CONTRATADA:</strong><br><strong>Empresa:</strong> ${esc(CONTRATADA_NOME)}<br><strong>CNPJ:</strong> ${esc(CONTRATADA_CNPJ)}<br><br><strong>Endereco:</strong> ${esc(CONTRATADA_ENDERECO)}</div></div>`,
+    `<div class="contract-parties">
+      <div class="contract-party">
+        <strong class="contract-party-title">CONTRATANTE:</strong>
+        <div class="contract-field"><strong>Nome:</strong><span>${esc(c.cliente)}</span></div>
+        <div class="contract-field"><strong>RG:</strong><span>${esc(c.rg || "Opcional")}</span></div>
+        <div class="contract-field"><strong>CPF/CNPJ:</strong><span>${esc(c.documento)}</span></div>
+        <div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto || "Opcional")}</span></div>
+        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(c.endereco)}</span></div>
+        <div class="contract-field"><strong>Telefone:</strong><span>${esc(c.telefone)}</span></div>
+      </div>
+      <div class="contract-party">
+        <strong class="contract-party-title">CONTRATADA:</strong>
+        <div class="contract-field"><strong>Empresa:</strong><span>${esc(CONTRATADA_NOME)}</span></div>
+        <div class="contract-field"><strong>CNPJ:</strong><span>${esc(CONTRATADA_CNPJ)}</span></div>
+        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(CONTRATADA_ENDERECO)}</span></div>
+      </div>
+    </div>`,
     `<p>As partes acima identificadas resolvem firmar o presente Contrato de Prestacao de Servicos, regido pelas clausulas abaixo.</p>`,
     `<h3>Clausula 1 - Do Objeto</h3>`,
     `<p>O presente contrato tem como objeto a prestacao de servicos de ${esc(c.servico)}, conforme descricao detalhada.</p>`,
