@@ -296,17 +296,102 @@
   .footer { margin-top: 32px; text-align: center; font-size: 12px; color: var(--muted); }
   .footer a { color: var(--purple); text-decoration: none; font-weight: 600; }
   .premium-print { display: none; }
+  .contract-print { display: none; }
+
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tab-btn {
+    background: #fff;
+    border: 2px solid var(--border);
+    color: var(--purple);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+
+  .tab-btn.active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  textarea {
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    background: #fafbfc;
+    min-height: 90px;
+    resize: vertical;
+    font-family: "Segoe UI", sans-serif;
+  }
+
+  textarea:focus { border-color: var(--purple); outline: none; background: #fff; }
+  .contract-preview { display: none; }
+  .contract-preview.visible { display: block; }
+  .contract-preview-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    line-height: 1.7;
+    background: #fff;
+    font-size: 14px;
+  }
+  .contract-preview-box h2 { color: var(--purple); font-family: Georgia, serif; font-size: 20px; margin-bottom: 12px; }
+  .contract-preview-box h3 { font-size: 16px; margin: 18px 0 8px; text-transform: uppercase; color: var(--text); }
+  .contract-preview-box p { margin-bottom: 10px; }
+  .contract-preview-box strong { color: var(--purple); }
+  .contract-parties {
+    border: 1px solid #c9c9c9;
+    margin: 10px 0;
+  }
+  .contract-party {
+    padding: 12px;
+    border-bottom: 1px solid #c9c9c9;
+  }
+  .contract-party:last-child { border-bottom: 0; }
+  .contract-list { margin: 8px 0 10px 24px; }
+  .contract-list li { margin-bottom: 4px; }
+  .contract-payment th, .contract-payment td {
+    border: 1px solid var(--border);
+    padding: 9px 10px;
+    text-align: left;
+  }
+  .contract-payment th { background: #f8f8fb; color: var(--text); }
+  .contract-sign-lines {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-top: 28px;
+    text-align: center;
+  }
+  .contract-sign-lines div {
+    border-top: 1px solid var(--text);
+    padding-top: 8px;
+  }
 
   @media print {
     @page { size: A4; margin: 0; }
     body { background: #fff; padding: 0; font-size: 11px; }
-    html, body, .premium-print, .premium-print * {
+    html, body, .premium-print, .premium-print *, .contract-print, .contract-print * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
     body * { visibility: hidden; }
     .premium-print, .premium-print * { visibility: visible; }
+    body.printing-contract .premium-print, body.printing-contract .premium-print * {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    body.printing-contract .contract-print, body.printing-contract .contract-print * { visibility: visible; }
     .premium-print {
       display: block !important;
       position: absolute;
@@ -316,6 +401,17 @@
       background: #fff;
       color: var(--text);
       font-family: "Segoe UI", sans-serif;
+    }
+    body.printing-contract .contract-print {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #fff;
+      color: var(--text);
+      font-family: "Segoe UI", sans-serif;
+      padding-bottom: 66px;
     }
     .premium-top {
       background: #231a72 !important;
@@ -352,6 +448,18 @@
     .premium-obs p { padding: 10px 12px; line-height: 1.7; font-size: 13px; }
     .premium-sign { display: none; }
     .premium-footer { position: fixed; bottom: 0; left: 0; right: 0; border-top: 3px solid var(--orange); background: #f1efff; color: var(--purple); padding: 12px 58px; display: flex; justify-content: space-between; font-size: 11px; }
+    body.printing-contract .contract-print .premium-top { display: none !important; }
+    .contract-title { text-align: left; color: #000; font-family: "Segoe UI", sans-serif; font-size: 28px; font-weight: 900; margin: 70px 58px 34px; text-transform: uppercase; max-width: 620px; }
+    .contract-text { padding: 0 58px 20px; line-height: 1.45; font-size: 13px; text-align: left; }
+    .contract-text h3 { font-size: 20px; margin: 22px 0 12px; text-transform: uppercase; }
+    .contract-text p { margin-bottom: 10px; }
+    .contract-text strong { color: #000; }
+    .contract-text .contract-parties { border: 1px solid #c9c9c9; margin-bottom: 0; }
+    .contract-text .contract-party { padding: 10px 12px; border-bottom: 1px solid #c9c9c9; }
+    .contract-text .contract-list { margin-left: 28px; }
+    .contract-text .contract-payment th, .contract-text .contract-payment td { padding: 7px 9px; font-size: 12px; }
+    .contract-sign { display: none; grid-template-columns: 1fr 1fr; gap: 44px; padding: 28px 58px 0; text-align: center; font-size: 12px; }
+    .contract-sign div { border-top: 1px solid var(--text); padding-top: 9px; }
     .input-section, .header, .results > :not(.premium-print), .footer { display: none !important; }
     /*
     .results { display: block !important; }
@@ -421,6 +529,12 @@
     </div>
   </div>
 
+  <div class="tabs" role="tablist" aria-label="Seções do sistema">
+    <button class="tab-btn active" id="tab-btn-orcamento" onclick="mostrarAba('orcamento')" type="button">Orçamentos</button>
+    <button class="tab-btn" id="tab-btn-contratos" onclick="mostrarAba('contratos')" type="button">Contratos</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-orcamento">
   <div class="card input-section">
     <div class="card-title">Dados da Obra</div>
     <div class="warning">
@@ -668,6 +782,129 @@
     <div class="table-note" id="table-note"></div>
   </div>
 
+  </div>
+
+  <div class="tab-panel" id="tab-contratos">
+    <div class="card input-section">
+      <div class="card-title">Gerar Contrato</div>
+      <div class="warning">
+        Preencha os dados principais do cliente e da forma de entrada. Depois e so gerar o contrato e imprimir em PDF.
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nome do Cliente</label>
+          <input type="text" id="contrato_cliente" placeholder="Ex: Joao da Silva">
+        </div>
+        <div class="form-group">
+          <label>CPF ou CNPJ</label>
+          <input type="text" id="contrato_documento" placeholder="Ex: 000.000.000-00">
+        </div>
+        <div class="form-group">
+          <label>RG</label>
+          <input type="text" id="contrato_rg" placeholder="Opcional">
+        </div>
+        <div class="form-group">
+          <label>Data de Nascimento</label>
+          <input type="date" id="contrato_nascimento">
+        </div>
+        <div class="form-group">
+          <label>Telefone do Cliente</label>
+          <input type="text" id="contrato_telefone" placeholder="Ex: (11) 99999-9999">
+        </div>
+        <div class="form-group">
+          <label>Endereco da Obra</label>
+          <input type="text" id="contrato_endereco" placeholder="Ex: Rua das Flores, 123 - Apto 42">
+        </div>
+        <div class="form-group">
+          <label>Valor Total do Contrato (R$)</label>
+          <input type="number" id="contrato_valor" placeholder="Ex: 4500,00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Valor da Entrada (R$)</label>
+          <input type="number" id="contrato_entrada_valor" placeholder="Ex: 2700,00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Forma da Entrada</label>
+          <select id="contrato_entrada_forma">
+            <option value="Pix">Pix</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="Cartao de debito">Cartao de debito</option>
+            <option value="Cartao de credito">Cartao de credito</option>
+            <option value="Transferencia bancaria">Transferencia bancaria</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Previsao de Inicio</label>
+          <input type="date" id="contrato_inicio">
+        </div>
+        <div class="form-group">
+          <label>Prazo de Execucao</label>
+          <input type="text" id="contrato_prazo" value="1 a 2 dias uteis">
+        </div>
+        <div class="form-group">
+          <label>Servico Contratado</label>
+          <input type="text" id="contrato_servico" value="Fornecimento e instalacao de piso, com material e mao de obra inclusos">
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Escopo do Servico</label>
+          <textarea id="contrato_escopo">Piso Laminado Durafloor New Way
+Rodape branco MDF de 7 cm
+Manta
+Prego
+Perfil T
+Perfil Frontal
+Mao de obra especializada com instalacao completa</textarea>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Observacoes</label>
+          <textarea id="contrato_observacoes">Nao incluidos: Remocao de moveis, eletrodomesticos, pisos antigos ou objetos pessoais, bem como corte de portas.</textarea>
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="btn-calc" onclick="gerarContrato()" type="button">Gerar Contrato</button>
+      </div>
+    </div>
+
+    <div class="card contract-preview" id="contract-preview">
+      <div class="results-header">
+        <div>
+          <div class="res-client-name" id="contract-preview-title">Contrato</div>
+          <div class="res-address" id="contract-preview-subtitle">-</div>
+        </div>
+        <div class="res-actions">
+          <button class="btn-whatsapp" onclick="enviarContratoWhatsApp()" type="button">Enviar WhatsApp</button>
+          <button class="btn-print" onclick="imprimirContrato()" type="button">Imprimir / PDF</button>
+        </div>
+      </div>
+      <div class="contract-preview-box" id="contract-preview-box"></div>
+    </div>
+  </div>
+
+  <div class="contract-print" id="contract-print">
+    <div class="premium-top">
+      <div>
+        <img class="premium-logo" src="assets/logo-ala-decor-transparente.png" alt="A.L.A DECOR">
+      </div>
+      <div class="premium-company">
+        <strong>A.L.A Decor Pisos Laminados e Vinilicos</strong>
+        CNPJ: 41.374.458/0001-98<br>
+        Rua Bauru, 129 Jardim do Carmo - Itaquaquecetuba/SP<br>
+        (11) 97780-3209 &nbsp; | &nbsp; @a.l.a_decoracoes<br>
+        a.l.a_decoracoes2025@gmail.com
+      </div>
+    </div>
+    <div class="contract-title">Contrato de Prestacao de Servicos - Aladecor</div>
+    <div class="contract-text" id="contract-print-text"></div>
+    <div class="contract-sign">
+      <div>A.L.A DECOR Pisos Laminados e Vinilicos</div>
+      <div id="contract-sign-client">Cliente</div>
+    </div>
+    <div class="premium-footer">
+      <span>A.L.A DECOR - Pisos Vinilicos e Laminados - (11) 97780-3209 - @a.l.a_decoracoes</span>
+      <span>Contrato</span>
+    </div>
+  </div>
+
   <div class="footer">
     A.L.A DECOR - Pisos Vinílicos e Laminados -
     <a href="tel:11977803209">(11) 97780-3209</a> -
@@ -717,6 +954,7 @@ const PRODUTOS = {
 };
 
 let ultimoOrcamento = null;
+let ultimoContrato = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
 
 function fmt(v) {
@@ -731,6 +969,27 @@ function dataBR(valorISO) {
   if (!valorISO) return "";
   const partes = valorISO.split("-");
   return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : valorISO;
+}
+
+function esc(valor) {
+  return String(valor || "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[char]));
+}
+
+function numeroCampo(id) {
+  return parseFloat(document.getElementById(id).value.replace(",", ".")) || 0;
+}
+
+function mostrarAba(nome) {
+  document.querySelectorAll(".tab-panel").forEach(painel => painel.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(botao => botao.classList.remove("active"));
+  document.getElementById("tab-" + nome).classList.add("active");
+  document.getElementById("tab-btn-" + nome).classList.add("active");
 }
 
 function getProdutoSelecionado() {
@@ -888,11 +1147,212 @@ function renderizarHistorico() {
       </div>
       <div class="history-actions">
         <button class="btn-print btn-small" onclick="imprimirOrcamentoSalvo('${item.id}')">PDF</button>
+        <button class="btn-print btn-small" onclick="preencherContratoDoOrcamento('${item.id}')">Contrato</button>
         <button class="btn-whatsapp btn-small" onclick="abrirWhatsAppComOrcamento('${item.id}')">WhatsApp</button>
         <button class="btn-danger btn-small" onclick="apagarOrcamento('${item.id}')">Apagar</button>
       </div>
     </div>
   `).join("");
+}
+
+function preencherContratoDoOrcamento(id) {
+  const lista = carregarHistorico();
+  const orcamento = lista.find(item => item.id === id);
+  if (!orcamento) return;
+
+  document.getElementById("contrato_cliente").value = orcamento.cliente || "";
+  document.getElementById("contrato_documento").value = orcamento.documento || "";
+  document.getElementById("contrato_rg").value = "";
+  document.getElementById("contrato_nascimento").value = "";
+  document.getElementById("contrato_telefone").value = orcamento.telefone || "";
+  document.getElementById("contrato_endereco").value = orcamento.endereco || "";
+  document.getElementById("contrato_valor").value = (orcamento.totalGeral || 0).toFixed(2);
+  document.getElementById("contrato_entrada_valor").value = ((orcamento.totalGeral || 0) * 0.60).toFixed(2);
+  document.getElementById("contrato_servico").value = "Fornecimento e instalacao de " + (orcamento.produtoNome || orcamento.tipoLabel || "piso") + ", com material e mao de obra inclusos";
+  document.getElementById("contrato_escopo").value = montarEscopoDoOrcamento(orcamento).join("\n");
+  mostrarAba("contratos");
+  document.getElementById("contrato_cliente").scrollIntoView({behavior: "smooth", block: "center"});
+}
+
+function montarEscopoDoOrcamento(o) {
+  const itens = [
+    o.produtoNome || o.tipoLabel || "Piso",
+    "Rodape branco MDF de 7 cm"
+  ];
+  if (o.tipo === "vinilico") {
+    itens.push("Autonivelante", "Primer");
+  } else {
+    itens.push("Manta", "Prego");
+    if ((o.portas || 0) > 0) itens.push("Perfil T");
+  }
+  itens.push("Mao de obra especializada com instalacao completa");
+  return itens;
+}
+
+function validarContrato() {
+  const campos = [
+    ["contrato_cliente", "nome do cliente"],
+    ["contrato_documento", "CPF ou CNPJ"],
+    ["contrato_telefone", "telefone do cliente"],
+    ["contrato_endereco", "endereco da obra"],
+    ["contrato_valor", "valor total do contrato"],
+    ["contrato_entrada_valor", "valor da entrada"],
+    ["contrato_servico", "servico contratado"]
+  ];
+
+  for (const [id, nome] of campos) {
+    const campo = document.getElementById(id);
+    if (!campo.value.trim()) {
+      alert("Informe o campo obrigatorio: " + nome + ".");
+      campo.focus();
+      return false;
+    }
+  }
+
+  if (numeroCampo("contrato_valor") <= 0) {
+    alert("Informe um valor total maior que zero.");
+    document.getElementById("contrato_valor").focus();
+    return false;
+  }
+
+  return true;
+}
+
+function dadosContrato() {
+  const valorTotal = numeroCampo("contrato_valor");
+  const valorEntrada = numeroCampo("contrato_entrada_valor");
+  const escopo = document.getElementById("contrato_escopo").value
+    .split(/\r?\n/)
+    .map(item => item.trim())
+    .filter(Boolean);
+  return {
+    cliente: document.getElementById("contrato_cliente").value.trim(),
+    documento: document.getElementById("contrato_documento").value.trim(),
+    rg: document.getElementById("contrato_rg").value.trim(),
+    nascimento: document.getElementById("contrato_nascimento").value,
+    telefone: document.getElementById("contrato_telefone").value.trim(),
+    endereco: document.getElementById("contrato_endereco").value.trim(),
+    valorTotal,
+    valorEntrada,
+    saldo: Math.max(0, valorTotal - valorEntrada),
+    formaEntrada: document.getElementById("contrato_entrada_forma").value,
+    inicio: document.getElementById("contrato_inicio").value,
+    prazo: document.getElementById("contrato_prazo").value.trim() || "a combinar",
+    servico: document.getElementById("contrato_servico").value.trim(),
+    escopo,
+    observacoes: document.getElementById("contrato_observacoes").value.trim(),
+    emissao: new Date().toLocaleDateString("pt-BR")
+  };
+}
+
+function montarContratoHTML(c) {
+  const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
+  const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
+  const rgCpf = [c.rg ? "RG: " + esc(c.rg) : "RG:", "CPF/CNPJ: " + esc(c.documento)].join(" | ");
+  const escopoHtml = c.escopo.map(item => `<li>${esc(item)};</li>`).join("");
+  return [
+    `<h3>1. Das Partes</h3>`,
+    `<div class="contract-parties"><div class="contract-party"><strong>CONTRATANTE:</strong><br><strong>Nome:</strong> ${esc(c.cliente)}<br>${rgCpf}<br><strong>Data de Nascimento:</strong> ${esc(nascimentoTexto)}<br><br><strong>Endereco:</strong> ${esc(c.endereco)}<br><strong>Telefone:</strong> ${esc(c.telefone)}</div><div class="contract-party"><strong>CONTRATADA:</strong><br><strong>ALADECOR</strong><br><strong>CNPJ:</strong> 41.374.458/0001-98<br><br><strong>Endereco:</strong> Rua Bauru, 129 - Jardim do Carmo - Itaquaquecetuba/SP</div></div>`,
+    `<p>As partes acima identificadas resolvem firmar o presente Contrato de Prestacao de Servicos, regido pelas clausulas abaixo.</p>`,
+    `<h3>Clausula 1 - Do Objeto</h3>`,
+    `<p>O presente contrato tem como objeto a prestacao de servicos de ${esc(c.servico)}, conforme descricao detalhada.</p>`,
+    `<h3>Clausula 2 - Do Escopo do Servico</h3>`,
+    `<p>Estao incluidos neste contrato os seguintes servicos e materiais:</p>`,
+    `<ul class="contract-list">${escopoHtml}</ul>`,
+    c.observacoes ? `<p>${esc(c.observacoes)}</p>` : "",
+    `<h3>Clausula 3 - Do Prazo e Inicio</h3>`,
+    `<p>O inicio da execucao do servico esta agendado para o dia <strong>${esc(inicioTexto)}</strong>.</p>`,
+    `<p>O prazo estimado para conclusao e de <strong>${esc(c.prazo)}</strong> apos o inicio, condicionado a liberacao do local e confirmacao do pagamento de entrada.</p>`,
+    `<h3>Clausula 4 - Do Valor e Forma de Pagamento</h3>`,
+    `<p>O valor total do servico e fixado em <strong>${fmt(c.valorTotal)}</strong>.</p>`,
+    `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Entrada</td><td>${fmt(c.valorEntrada)} (${esc(c.formaEntrada)})</td></tr><tr><td>Saldo restante</td><td>${fmt(c.saldo)} (pago apos a finalizacao da obra)</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`,
+    `<p>*Parcelamento no cartao sujeito aos juros da operadora.</p>`,
+    `<h3>Clausula 5 - Da Garantia</h3>`,
+    `<p>Mao de obra: 06 (seis) meses de garantia contra defeitos de instalacao por parte da ALADECOR.</p>`,
+    `<p>Material: garantia conforme termos, prazos e condicoes fornecidos exclusivamente pelo fabricante do material. A responsabilidade por defeitos de fabricacao, durabilidade e qualidade do produto e integralmente do fabricante.</p>`,
+    `<p><strong>Exclusoes de Garantia:</strong> Problemas no contrapiso original, umidade, infiltracoes, mau uso, danos causados por arraste de moveis ou limpeza inadequada.</p>`,
+    `<h3>Clausula 6 - Das Obrigacoes do Contratante</h3>`,
+    `<p>O CONTRATANTE deve garantir acesso ao local, ambiente livre de obstaculos e fornecimento de energia eletrica. Cancelamentos de data agendada com menos de 24h geram taxa de R$ 500,00.</p>`,
+    `<h3>Clausula 7 - Do Foro e Assinatura Eletronica</h3>`,
+    `<p>Fica eleito o foro da comarca de Sao Paulo/SP. Este contrato e valido via assinatura eletronica (MP no 2.200-2/2001).</p>`,
+    `<div class="contract-sign-lines"><div>CONTRATANTE<br>${esc(c.cliente)}<br>Data: ____/____/____</div><div>CONTRATADA: ALADECOR<br>Data: ____/____/____</div></div>`
+  ].filter(Boolean).join("");
+}
+
+function montarContratoTexto(c) {
+  const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
+  const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
+  return [
+    "CONTRATO DE PRESTACAO DE SERVICOS - A.L.A DECOR",
+    "",
+    "1. DAS PARTES",
+    "Cliente: " + c.cliente,
+    "RG: " + (c.rg || ""),
+    "CPF/CNPJ: " + c.documento,
+    "Data de nascimento: " + nascimentoTexto,
+    "Telefone: " + c.telefone,
+    "Endereco da obra: " + c.endereco,
+    "Contratada: ALADECOR - CNPJ 41.374.458/0001-98",
+    "Endereco: Rua Bauru, 129 - Jardim do Carmo - Itaquaquecetuba/SP",
+    "",
+    "CLAUSULA 1 - DO OBJETO",
+    "Servico contratado: " + c.servico,
+    "",
+    "CLAUSULA 2 - DO ESCOPO DO SERVICO",
+    c.escopo.map(item => "- " + item).join("\n"),
+    c.observacoes ? "\n" + c.observacoes : "",
+    "",
+    "CLAUSULA 3 - DO PRAZO E INICIO",
+    "Previsao de inicio: " + inicioTexto,
+    "Prazo estimado: " + c.prazo,
+    "",
+    "CLAUSULA 4 - DO VALOR E FORMA DE PAGAMENTO",
+    "Valor total: " + fmt(c.valorTotal),
+    "Entrada: " + fmt(c.valorEntrada) + " via " + c.formaEntrada,
+    "Saldo na conclusao: " + fmt(c.saldo),
+    "",
+    "CLAUSULA 5 - DA GARANTIA",
+    "Mao de obra: 06 meses. Material: conforme termos do fabricante.",
+    "Exclusoes: contrapiso original, umidade, infiltracoes, mau uso, arraste de moveis ou limpeza inadequada.",
+    "",
+    "CLAUSULA 6 - DAS OBRIGACOES DO CONTRATANTE",
+    "O contratante deve garantir acesso ao local, ambiente livre de obstaculos e energia eletrica. Cancelamentos com menos de 24h geram taxa de R$ 500,00.",
+    "",
+    "CLAUSULA 7 - DO FORO E ASSINATURA ELETRONICA",
+    "Fica eleito o foro da comarca de Sao Paulo/SP. Este contrato e valido via assinatura eletronica (MP no 2.200-2/2001).",
+    "",
+    "A.L.A DECOR - Pisos Vinilicos e Laminados",
+    "(11) 97780-3209"
+  ].filter(Boolean).join("\n");
+}
+
+function gerarContrato() {
+  if (!validarContrato()) return;
+  ultimoContrato = dadosContrato();
+  const html = montarContratoHTML(ultimoContrato);
+  document.getElementById("contract-preview-title").textContent = "Contrato - " + ultimoContrato.cliente;
+  document.getElementById("contract-preview-subtitle").textContent = fmt(ultimoContrato.valorTotal) + " - entrada " + fmt(ultimoContrato.valorEntrada) + " via " + ultimoContrato.formaEntrada;
+  document.getElementById("contract-preview-box").innerHTML = `<h2>Contrato de Prestacao de Servicos - Aladecor</h2>${html}`;
+  document.getElementById("contract-print-text").innerHTML = html;
+  document.getElementById("contract-sign-client").textContent = ultimoContrato.cliente;
+  document.getElementById("contract-preview").classList.add("visible");
+  document.getElementById("contract-preview").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+function imprimirContrato() {
+  gerarContrato();
+  if (!ultimoContrato) return;
+  document.body.classList.add("printing-contract");
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove("printing-contract");
+  }, 50);
+}
+
+function enviarContratoWhatsApp() {
+  gerarContrato();
+  if (!ultimoContrato) return;
+  window.open("https://wa.me/?text=" + encodeURIComponent(montarContratoTexto(ultimoContrato)), "_blank");
 }
 
 function prepararCamposIniciais() {
