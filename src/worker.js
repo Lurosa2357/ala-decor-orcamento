@@ -269,6 +269,7 @@ function buildBudget(payload) {
   const portas = Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
   const nome = payload.nome_cliente || payload.cliente || payload.nome || "cliente";
   const ambiente = payload.ambiente || payload.local || "ambiente informado";
+  const valorInformado = toNumber(payload.valor_total || payload.valor || payload.total);
 
   if (!area) {
     return {
@@ -280,7 +281,7 @@ function buildBudget(payload) {
   const precoM2 = tipo === "vinilico" ? 145 : 125;
   const freteInstalacaoBase = 160;
   const ajustePortas = portas * 44.8;
-  const total = area * precoM2 + freteInstalacaoBase + ajustePortas;
+  const total = valorInformado || (area * precoM2 + freteInstalacaoBase + ajustePortas);
 
   return {
     status: "orcamento_estimado",
@@ -303,49 +304,95 @@ function buildBudget(payload) {
 function renderBudgetSvg(payload) {
   const result = buildBudget(payload);
   const nome = payload.nome_cliente || payload.cliente || payload.nome || "Cliente";
-  const ambiente = payload.ambiente || payload.local || "Ambiente informado";
+  const telefone = payload.telefone || payload.phone || payload.whatsapp || "-";
+  const endereco = payload.endereco || payload.address || "A confirmar";
+  const numero = payload.orcamento_numero || payload.numero || payload.id || "AUTO";
+  const emissao = payload.emissao || new Date().toLocaleDateString("pt-BR");
+  const validade = payload.validade || "7 dias";
+  const ambiente = payload.ambiente || payload.local || "ambiente informado";
   const piso = result.tipo_piso === "vinilico" ? "Piso vinilico" : "Piso laminado";
   const area = result.area_m2 || toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
   const portas = result.qtd_portas ?? Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
   const total = result.valor_total || 0;
-  const precoM2 = result.preco_m2 || (result.tipo_piso === "vinilico" ? 145 : 125);
-  const ajustePortas = result.ajuste_portas || portas * 44.8;
+  const precoM2 = area ? total / area : result.preco_m2 || (result.tipo_piso === "vinilico" ? 145 : 125);
+  const entrada = total * 0.6;
+  const servico = [
+    `Fornecimento e instalacao de ${piso.toLowerCase()}`,
+    `${ambiente} - ${area.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} m2`,
+    portas ? `${portas} porta${portas === 1 ? "" : "s"} / passagem${portas === 1 ? "" : "ns"} considerada${portas === 1 ? "" : "s"}` : "Portas/passagens a confirmar"
+  ];
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
-  <rect width="1080" height="1350" fill="#f3f0e8"/>
-  <rect x="70" y="70" width="940" height="1210" rx="34" fill="#ffffff" stroke="#1f2933" stroke-width="3"/>
-  <rect x="70" y="70" width="940" height="210" rx="34" fill="#111827"/>
-  <text x="120" y="155" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">A.L.A DECOR</text>
-  <text x="120" y="220" font-family="Arial, sans-serif" font-size="28" fill="#e5e7eb">Pisos vinilicos e laminados</text>
-  <text x="120" y="345" font-family="Arial, sans-serif" font-size="46" font-weight="700" fill="#111827">Orcamento inicial</text>
-  <text x="120" y="400" font-family="Arial, sans-serif" font-size="25" fill="#6b7280">Estimativa para conferencia da equipe</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1528" viewBox="0 0 1080 1528">
+  <rect width="1080" height="1528" fill="#f0f0f8"/>
+  <rect x="60" y="54" width="960" height="1420" rx="8" fill="#ffffff"/>
+  <rect x="60" y="54" width="960" height="172" fill="#231a72"/>
+  <text x="95" y="128" font-family="Georgia, serif" font-size="46" font-weight="700" fill="#f0eadf">A.L.A DECOR</text>
+  <text x="95" y="175" font-family="Arial, sans-serif" font-size="22" fill="#f5a04a">Pisos Laminados e Vinilicos</text>
+  <text x="610" y="100" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#ffffff">A.L.A Decor Pisos Laminados e Vinilicos</text>
+  <text x="610" y="132" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">CNPJ: 41.374.458/0001-98</text>
+  <text x="610" y="162" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">Rua Bauru, 129 - Jardim do Carmo</text>
+  <text x="610" y="192" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">(11) 97780-3209 | @a.l.a_decoracoes</text>
 
-  <rect x="120" y="460" width="840" height="340" rx="22" fill="#f9fafb" stroke="#d1d5db" stroke-width="2"/>
-  <text x="160" y="535" font-family="Arial, sans-serif" font-size="28" fill="#6b7280">Cliente</text>
-  <text x="160" y="585" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#111827">${escapeXml(nome)}</text>
-  <text x="160" y="665" font-family="Arial, sans-serif" font-size="28" fill="#6b7280">Ambiente</text>
-  <text x="160" y="715" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(ambiente)}</text>
+  <rect x="95" y="266" width="890" height="104" fill="#ffffff" stroke="#dde3ec"/>
+  <rect x="95" y="266" width="890" height="42" fill="#231a72"/>
+  <text x="120" y="294" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">ORCAMENTO No</text>
+  <text x="430" y="294" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">EMITIDO EM</text>
+  <text x="710" y="294" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">VALIDO ATE</text>
+  <text x="120" y="348" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#1a1a2e">${escapeXml(numero)}</text>
+  <text x="430" y="348" font-family="Arial, sans-serif" font-size="25" fill="#1a1a2e">${escapeXml(emissao)}</text>
+  <text x="710" y="348" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#e8892a">${escapeXml(validade)}</text>
 
-  <rect x="120" y="840" width="260" height="145" rx="20" fill="#eef2ff"/>
-  <text x="150" y="895" font-family="Arial, sans-serif" font-size="24" fill="#4f46e5">Piso</text>
-  <text x="150" y="945" font-family="Arial, sans-serif" font-size="31" font-weight="700" fill="#111827">${escapeXml(piso)}</text>
+  <rect x="95" y="402" width="890" height="176" fill="#ffffff" stroke="#dde3ec"/>
+  <rect x="95" y="402" width="445" height="42" fill="#231a72"/>
+  <rect x="540" y="402" width="445" height="42" fill="#231a72"/>
+  <text x="120" y="430" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">CLIENTE</text>
+  <text x="565" y="430" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">TELEFONE</text>
+  <text x="120" y="492" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#1a1a2e">${escapeXml(nome)}</text>
+  <text x="565" y="492" font-family="Arial, sans-serif" font-size="25" fill="#1a1a2e">${escapeXml(telefone)}</text>
+  <rect x="95" y="526" width="890" height="42" fill="#231a72"/>
+  <text x="120" y="554" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#ffffff">ENDERECO</text>
+  <text x="120" y="610" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">${escapeXml(endereco)}</text>
 
-  <rect x="410" y="840" width="230" height="145" rx="20" fill="#ecfdf5"/>
-  <text x="440" y="895" font-family="Arial, sans-serif" font-size="24" fill="#047857">Metragem</text>
-  <text x="440" y="945" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(area.toLocaleString("pt-BR"))} m2</text>
+  <text x="95" y="675" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#231a72">SERVICO</text>
+  <rect x="95" y="700" width="890" height="248" fill="#ffffff" stroke="#dde3ec"/>
+  <rect x="95" y="700" width="890" height="48" fill="#231a72"/>
+  <text x="120" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">DESCRICAO DO SERVICO</text>
+  <text x="585" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">QTD</text>
+  <text x="675" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">UNID.</text>
+  <text x="760" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">PRECO/M2</text>
+  <text x="900" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">TOTAL</text>
+  <text x="120" y="795" font-family="Georgia, serif" font-size="24" font-weight="700" fill="#1a1a2e">${escapeXml(servico[0])}</text>
+  <text x="120" y="837" font-family="Arial, sans-serif" font-size="21" fill="#1a1a2e">${escapeXml(servico[1])}</text>
+  <text x="120" y="879" font-family="Arial, sans-serif" font-size="21" fill="#1a1a2e">${escapeXml(servico[2])}</text>
+  <text x="585" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">${escapeXml(area.toLocaleString("pt-BR", { maximumFractionDigits: 2 }))}</text>
+  <text x="685" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">m2</text>
+  <text x="770" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">${escapeXml(formatMoney(precoM2))}</text>
+  <text x="880" y="820" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#1a1a2e">${escapeXml(formatMoney(total))}</text>
 
-  <rect x="670" y="840" width="290" height="145" rx="20" fill="#fff7ed"/>
-  <text x="700" y="895" font-family="Arial, sans-serif" font-size="24" fill="#c2410c">Portas</text>
-  <text x="700" y="945" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(portas)} porta${portas === 1 ? "" : "s"}</text>
+  <rect x="95" y="986" width="890" height="118" fill="#ffffff" stroke="#231a72" stroke-width="3"/>
+  <text x="125" y="1032" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#6b7280">TOTAL DO PROJETO</text>
+  <text x="125" y="1084" font-family="Georgia, serif" font-size="48" font-weight="700" fill="#231a72">${escapeXml(formatMoney(total))}</text>
 
-  <line x1="120" y1="1050" x2="960" y2="1050" stroke="#d1d5db" stroke-width="2"/>
-  <text x="120" y="1110" font-family="Arial, sans-serif" font-size="27" fill="#374151">Base: ${escapeXml(area.toLocaleString("pt-BR"))} m2 x ${formatMoney(precoM2)}</text>
-  <text x="120" y="1160" font-family="Arial, sans-serif" font-size="27" fill="#374151">Instalacao/frete base: ${formatMoney(160)}</text>
-  <text x="120" y="1210" font-family="Arial, sans-serif" font-size="27" fill="#374151">Ajuste de portas: ${formatMoney(ajustePortas)}</text>
+  <text x="95" y="1165" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#231a72">CONDICOES DE PAGAMENTO</text>
+  <rect x="95" y="1190" width="890" height="150" fill="#ffffff" stroke="#dde3ec"/>
+  <rect x="95" y="1190" width="890" height="44" fill="#231a72"/>
+  <text x="120" y="1219" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">A VISTA - PIX</text>
+  <text x="380" y="1219" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">PARCELADO</text>
+  <text x="660" y="1219" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">ENTRADA + CONCLUSAO</text>
+  <text x="120" y="1290" font-family="Georgia, serif" font-size="31" font-weight="700" fill="#16803c">${escapeXml(formatMoney(total))}</text>
+  <text x="380" y="1270" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">Ate 12x no cartao</text>
+  <text x="380" y="1302" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">com taxa da operadora.</text>
+  <text x="660" y="1270" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">60% de sinal: ${escapeXml(formatMoney(entrada))}</text>
+  <text x="660" y="1302" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">restante no termino.</text>
 
-  <rect x="120" y="1245" width="840" height="92" rx="20" fill="#111827"/>
-  <text x="160" y="1305" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff">Total estimado: ${escapeXml(formatMoney(total))}</text>
+  <line x1="150" y1="1400" x2="430" y2="1400" stroke="#1a1a2e" stroke-width="2"/>
+  <line x1="650" y1="1400" x2="930" y2="1400" stroke="#1a1a2e" stroke-width="2"/>
+  <text x="170" y="1433" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">A.L.A DECOR Pisos Laminados e Vinilicos</text>
+  <text x="745" y="1433" font-family="Arial, sans-serif" font-size="18" fill="#1a1a2e">${escapeXml(nome)}</text>
+
+  <rect x="60" y="1474" width="960" height="54" fill="#231a72"/>
+  <text x="92" y="1508" font-family="Arial, sans-serif" font-size="18" fill="#ffffff">A.L.A DECOR - Pisos Vinilicos e Laminados - (11) 97780-3209 - @a.l.a_decoracoes</text>
 </svg>`;
 
   return new Response(svg, {
