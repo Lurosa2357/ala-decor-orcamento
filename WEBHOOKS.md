@@ -23,6 +23,21 @@ Quando `WEBHOOK_SECRET` estiver ativo, envie o header:
 x-webhook-secret: seu-segredo
 ```
 
+## Filtro do numero correto no LionChat
+
+O webhook esta configurado para aceitar somente a caixa:
+
+- Inbox: `A.L.A DECOR`
+- Inbox ID: `230`
+- Telefone: `5511977803209`
+
+Se precisar trocar no futuro, configure no Cloudflare:
+
+```bash
+wrangler secret put ALLOWED_LIONCHAT_INBOX_IDS
+wrangler secret put ALLOWED_LIONCHAT_PHONE_NUMBERS
+```
+
 ## Encaminhar para outro webhook
 
 Se quiser que o Worker receba e repasse para outro CRM, configure:
