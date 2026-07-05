@@ -982,6 +982,7 @@ const PRODUTOS = {
 
 let ultimoOrcamento = null;
 let ultimoContrato = null;
+let limparImpressaoContratoTimer = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
 const CONTRATADA_NOME = "ALADECOR PISOS VINILICOS E LAMINADOS / 41.374.458 AUGUSTO SERGIO ALVES ROSA - ME";
 const CONTRATADA_CNPJ = "41.374.458/0001-98";
@@ -1232,9 +1233,7 @@ function montarEscopoDoOrcamento(o) {
 function validarContrato() {
   const campos = [
     ["contrato_cliente", "nome do cliente"],
-    ["contrato_documento", "CPF ou CNPJ"],
     ["contrato_telefone", "telefone do cliente"],
-    ["contrato_endereco", "endereco da obra"],
     ["contrato_valor", "valor total do contrato"],
     ["contrato_entrada_percentual", "porcentagem da entrada"],
     ["contrato_servico", "servico contratado"]
@@ -1305,9 +1304,9 @@ function montarContratoHTML(c) {
         <strong class="contract-party-title">CONTRATANTE:</strong>
         <div class="contract-field"><strong>Nome:</strong><span>${esc(c.cliente)}</span></div>
         <div class="contract-field"><strong>RG:</strong><span>${esc(c.rg || "Opcional")}</span></div>
-        <div class="contract-field"><strong>CPF/CNPJ:</strong><span>${esc(c.documento)}</span></div>
+        <div class="contract-field"><strong>CPF/CNPJ:</strong><span>${esc(c.documento || "Opcional")}</span></div>
         <div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto || "Opcional")}</span></div>
-        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(c.endereco)}</span></div>
+        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(c.endereco || "Opcional")}</span></div>
         <div class="contract-field"><strong>Telefone:</strong><span>${esc(c.telefone)}</span></div>
       </div>
       <div class="contract-party">
@@ -1352,11 +1351,11 @@ function montarContratoTexto(c) {
     "",
     "1. DAS PARTES",
     "Cliente: " + c.cliente,
-    "RG: " + (c.rg || ""),
-    "CPF/CNPJ: " + c.documento,
+    "RG: " + (c.rg || "Opcional"),
+    "CPF/CNPJ: " + (c.documento || "Opcional"),
     "Data de nascimento: " + (nascimentoTexto || "Opcional"),
     "Telefone: " + c.telefone,
-    "Endereco da obra: " + c.endereco,
+    "Endereco da obra: " + (c.endereco || "Opcional"),
     "Contratada: " + CONTRATADA_NOME,
     "CNPJ: " + CONTRATADA_CNPJ,
     "Endereco: " + CONTRATADA_ENDERECO,
@@ -1412,10 +1411,21 @@ function imprimirContrato() {
   gerarContrato();
   if (!ultimoContrato) return;
   document.body.classList.add("printing-contract");
+  window.removeEventListener("afterprint", limparModoImpressaoContrato);
+  window.addEventListener("afterprint", limparModoImpressaoContrato, { once: true });
   setTimeout(() => {
     window.print();
-    document.body.classList.remove("printing-contract");
-  }, 50);
+    limparImpressaoContratoTimer = setTimeout(limparModoImpressaoContrato, 10000);
+  }, 150);
+}
+
+function limparModoImpressaoContrato() {
+  document.body.classList.remove("printing-contract");
+  window.removeEventListener("afterprint", limparModoImpressaoContrato);
+  if (limparImpressaoContratoTimer) {
+    clearTimeout(limparImpressaoContratoTimer);
+    limparImpressaoContratoTimer = null;
+  }
 }
 
 function enviarContratoWhatsApp() {
