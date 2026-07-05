@@ -2,7 +2,7 @@ const JSON_HEADERS = {
   "content-type": "application/json; charset=utf-8",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, OPTIONS",
-  "access-control-allow-headers": "content-type, x-webhook-secret"
+  "access-control-allow-headers": "authorization, content-type, x-chatwoot-signature, x-hub-signature-256, x-lionchat-signature, x-signature, x-webhook-secret, x-webhook-signature"
 };
 
 const DEFAULT_ALLOWED_INBOX_IDS = ["230"];
@@ -113,35 +113,84 @@ function validateLionChatInbox(payload, env) {
   };
 }
 
-function assertSecret(request, env) {
-  if (!env.WEBHOOK_SECRET) return { ok: true, warning: "WEBHOOK_SECRET nao configurado" };
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
 
-  const received = request.headers.get("x-webhook-secret") || "";
-  if (received !== env.WEBHOOK_SECRET) {
-    return { ok: false, response: json({ ok: false, error: "Webhook secret invalido" }, 401) };
+  let result = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
 
-  return { ok: true };
+  return result === 0;
+}
+
+async function hmacSha256Hex(secret, body) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
+  return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function assertSecret(request, env, rawBody) {
+  if (!env.WEBHOOK_SECRET) return { ok: true, warning: "WEBHOOK_SECRET nao configurado" };
+
+  const directSecret =
+    request.headers.get("x-webhook-secret") ||
+    request.headers.get("x-lionchat-secret") ||
+    request.headers.get("x-webhook-token") ||
+    (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+
+  if (directSecret && timingSafeEqual(directSecret, env.WEBHOOK_SECRET)) {
+    return { ok: true, securityMode: "secret-header" };
+  }
+
+  const signature =
+    request.headers.get("x-chatwoot-signature") ||
+    request.headers.get("x-lionchat-signature") ||
+    request.headers.get("x-webhook-signature") ||
+    request.headers.get("x-hub-signature-256") ||
+    request.headers.get("x-signature");
+
+  if (signature) {
+    const expected = await hmacSha256Hex(env.WEBHOOK_SECRET, rawBody);
+    const normalized = signature.replace(/^sha256=/i, "");
+
+    if (timingSafeEqual(normalized, expected)) {
+      return { ok: true, securityMode: "hmac-sha256" };
+    }
+  }
+
+  return { ok: false, response: json({ ok: false, error: "Webhook secret invalido" }, 401) };
+}
+
+function parsePayload(rawBody, contentType) {
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    return Object.fromEntries(new URLSearchParams(rawBody).entries());
+  }
+
+  if (!rawBody) return {};
+
+  try {
+    return JSON.parse(rawBody);
+  } catch {
+    return { raw: rawBody };
+  }
 }
 
 async function readPayload(request) {
   const contentType = request.headers.get("content-type") || "";
+  const rawBody = await request.text();
 
-  if (contentType.includes("application/json")) {
-    return await request.json();
-  }
-
-  if (contentType.includes("application/x-www-form-urlencoded")) {
-    const form = await request.formData();
-    return Object.fromEntries(form.entries());
-  }
-
-  const text = await request.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { raw: text };
-  }
+  return {
+    rawBody,
+    payload: parsePayload(rawBody, contentType)
+  };
 }
 
 async function forwardPayload(env, payload) {
@@ -165,15 +214,18 @@ async function forwardPayload(env, payload) {
 }
 
 async function handleWebhook(request, env, ctx) {
-  const secret = assertSecret(request, env);
-  if (!secret.ok) return secret.response;
-
   let payload;
+  let rawBody;
   try {
-    payload = await readPayload(request);
+    const body = await readPayload(request);
+    payload = body.payload;
+    rawBody = body.rawBody;
   } catch (error) {
     return json({ ok: false, error: "Payload invalido", detail: error.message }, 400);
   }
+
+  const secret = await assertSecret(request, env, rawBody);
+  if (!secret.ok) return secret.response;
 
   const pathname = normalizePath(request.url);
   let inboxValidation = null;
@@ -199,6 +251,7 @@ async function handleWebhook(request, env, ctx) {
     receivedAt: new Date().toISOString(),
     path: pathname,
     source: payload.source || "aladecor",
+    securityMode: secret.securityMode || "none",
     inboxValidation,
     payload
   };
@@ -216,6 +269,7 @@ async function handleWebhook(request, env, ctx) {
     ok: true,
     receivedAt: event.receivedAt,
     forwarded,
+    securityMode: event.securityMode,
     warning: secret.warning
   });
 }
@@ -235,7 +289,7 @@ function handleStatus(env) {
       allowed_inbox_ids: normalizeList(env.ALLOWED_LIONCHAT_INBOX_IDS, DEFAULT_ALLOWED_INBOX_IDS),
       allowed_phone_numbers: normalizeList(env.ALLOWED_LIONCHAT_PHONE_NUMBERS, DEFAULT_ALLOWED_PHONE_NUMBERS)
     },
-    security: env.WEBHOOK_SECRET ? "x-webhook-secret ativo" : "WEBHOOK_SECRET ainda nao configurado",
+    security: env.WEBHOOK_SECRET ? "secret/header ou assinatura HMAC ativa" : "WEBHOOK_SECRET ainda nao configurado",
     forwarding: env.FORWARD_WEBHOOK_URL || env.CRM_WEBHOOK_URL ? "ativo" : "nao configurado"
   });
 }
