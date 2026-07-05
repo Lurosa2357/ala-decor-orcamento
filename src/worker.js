@@ -158,11 +158,19 @@ async function assertSecret(request, env, rawBody) {
     request.headers.get("x-signature");
 
   if (signature) {
-    const expected = await hmacSha256Hex(env.WEBHOOK_SECRET, rawBody);
     const normalized = signature.replace(/^sha256=/i, "");
+    const timestamp = request.headers.get("x-chatwoot-timestamp") || "";
+    const candidates = [
+      { mode: "hmac-sha256-body", body: rawBody },
+      timestamp ? { mode: "hmac-sha256-timestamp-dot-body", body: `${timestamp}.${rawBody}` } : null,
+      timestamp ? { mode: "hmac-sha256-timestamp-body", body: `${timestamp}${rawBody}` } : null
+    ].filter(Boolean);
 
-    if (timingSafeEqual(normalized, expected)) {
-      return { ok: true, securityMode: "hmac-sha256" };
+    for (const candidate of candidates) {
+      const expected = await hmacSha256Hex(env.WEBHOOK_SECRET, candidate.body);
+      if (timingSafeEqual(normalized, expected)) {
+        return { ok: true, securityMode: candidate.mode };
+      }
     }
   }
 
