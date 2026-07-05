@@ -195,6 +195,10 @@ function parsePayload(rawBody, contentType) {
   }
 }
 
+function parseSearchParams(url) {
+  return Object.fromEntries(new URL(url).searchParams.entries());
+}
+
 async function readPayload(request) {
   const contentType = request.headers.get("content-type") || "";
   const rawBody = await request.text();
@@ -362,6 +366,7 @@ function handleStatus(env) {
       "POST /api/webhook",
       "POST /api/webhook/lionchat",
       "POST /api/lionchat/webhook",
+      "GET /api/crm/orcamento",
       "POST /api/crm/orcamento",
       "POST /api/crm/contrato"
     ],
@@ -382,6 +387,10 @@ export default {
 
     if (pathname === "/api/webhook" && request.method === "GET") {
       return handleStatus(env);
+    }
+
+    if (isCrmPath(pathname) && request.method === "GET") {
+      return handleCrmApi(pathname, parseSearchParams(request.url));
     }
 
     if (isWebhookPath(pathname) && request.method === "POST") {
