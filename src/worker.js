@@ -33,6 +33,10 @@ function isLionChatPath(pathname) {
   return pathname === "/api/webhook/lionchat" || pathname === "/api/lionchat/webhook";
 }
 
+function isCrmPath(pathname) {
+  return pathname === "/api/crm/orcamento" || pathname === "/api/crm/contrato";
+}
+
 function normalizeList(value, fallback) {
   if (!value) return fallback;
   return String(value)
@@ -221,6 +225,69 @@ async function forwardPayload(env, payload) {
   };
 }
 
+function toNumber(value) {
+  if (typeof value === "number") return value;
+  const normalized = String(value || "").replace(",", ".").replace(/[^\d.]/g, "");
+  return parseFloat(normalized) || 0;
+}
+
+function formatMoney(value) {
+  return "R$ " + value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function buildBudget(payload) {
+  const tipoRaw = String(payload.tipo_piso || payload.tipo || "").toLowerCase();
+  const tipo = tipoRaw.includes("vin") ? "vinilico" : "laminado";
+  const area = toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
+  const portas = Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
+  const nome = payload.nome_cliente || payload.cliente || payload.nome || "cliente";
+  const ambiente = payload.ambiente || payload.local || "ambiente informado";
+
+  if (!area) {
+    return {
+      status: "precisa_dados",
+      mensagem: "Consigo montar sim. Me manda a metragem em m² ou uma foto/PDF da planta com as medidas visíveis?"
+    };
+  }
+
+  const precoM2 = tipo === "vinilico" ? 145 : 125;
+  const freteInstalacaoBase = 160;
+  const ajustePortas = portas * 44.8;
+  const total = area * precoM2 + freteInstalacaoBase + ajustePortas;
+
+  return {
+    status: "orcamento_estimado",
+    tipo_piso: tipo,
+    area_m2: area,
+    qtd_portas: portas,
+    valor_total: total,
+    mensagem: [
+      `Fechado, ${nome}! Com base nas informações enviadas:`,
+      `${tipo === "vinilico" ? "piso vinílico" : "piso laminado"}, ${area.toLocaleString("pt-BR")} m², ${portas} porta${portas === 1 ? "" : "s"} no ${ambiente}.`,
+      `Orçamento estimado: ${formatMoney(total)}.`,
+      "Esse valor é uma estimativa inicial. Para fechar certinho, a equipe confere a planta/medidas e confirma o modelo do piso."
+    ].join("\n")
+  };
+}
+
+async function handleCrmApi(pathname, payload) {
+  if (pathname === "/api/crm/orcamento") {
+    const result = buildBudget(payload);
+    console.log("Orcamento solicitado pelo CRM", JSON.stringify({ payload, result }));
+    return json({ ok: true, ...result });
+  }
+
+  if (pathname === "/api/crm/contrato") {
+    return json({
+      ok: true,
+      status: "recebido",
+      mensagem: "Dados de contrato recebidos. Vou preparar o contrato e chamar um atendente para conferir antes do envio."
+    });
+  }
+
+  return null;
+}
+
 async function handleWebhook(request, env, ctx) {
   let payload;
   let rawBody;
@@ -232,10 +299,15 @@ async function handleWebhook(request, env, ctx) {
     return json({ ok: false, error: "Payload invalido", detail: error.message }, 400);
   }
 
+  const pathname = normalizePath(request.url);
+  if (isCrmPath(pathname)) {
+    const crmResponse = await handleCrmApi(pathname, payload);
+    if (crmResponse) return crmResponse;
+  }
+
   const secret = await assertSecret(request, env, rawBody);
   if (!secret.ok) return secret.response;
 
-  const pathname = normalizePath(request.url);
   let inboxValidation = null;
 
   if (isLionChatPath(pathname)) {
