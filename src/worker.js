@@ -24,6 +24,7 @@ function isWebhookPath(pathname) {
     "/api/webhook",
     "/api/webhook/lionchat",
     "/api/lionchat/webhook",
+    "/api/crm/orcamento-imagem",
     "/api/crm/orcamento",
     "/api/crm/contrato"
   ].includes(pathname);
@@ -34,7 +35,7 @@ function isLionChatPath(pathname) {
 }
 
 function isCrmPath(pathname) {
-  return pathname === "/api/crm/orcamento" || pathname === "/api/crm/contrato";
+  return pathname === "/api/crm/orcamento" || pathname === "/api/crm/orcamento-imagem" || pathname === "/api/crm/contrato";
 }
 
 function normalizeList(value, fallback) {
@@ -239,6 +240,28 @@ function formatMoney(value) {
   return "R$ " + value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function escapeXml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildBudgetImageUrl(requestUrl, payload) {
+  const url = new URL(requestUrl);
+  url.pathname = "/api/crm/orcamento-imagem";
+  url.search = "";
+
+  for (const [key, value] of Object.entries(payload)) {
+    if (value !== null && value !== undefined && String(value).trim()) {
+      url.searchParams.set(key, String(value));
+    }
+  }
+
+  return url.toString();
+}
+
 function buildBudget(payload) {
   const tipoRaw = String(payload.tipo_piso || payload.tipo || "").toLowerCase();
   const tipo = tipoRaw.includes("vin") ? "vinilico" : "laminado";
@@ -264,6 +287,9 @@ function buildBudget(payload) {
     tipo_piso: tipo,
     area_m2: area,
     qtd_portas: portas,
+    preco_m2: precoM2,
+    frete_instalacao_base: freteInstalacaoBase,
+    ajuste_portas: ajustePortas,
     valor_total: total,
     mensagem: [
       `Fechado, ${nome}! Com base nas informações enviadas:`,
@@ -274,11 +300,75 @@ function buildBudget(payload) {
   };
 }
 
-async function handleCrmApi(pathname, payload) {
+function renderBudgetSvg(payload) {
+  const result = buildBudget(payload);
+  const nome = payload.nome_cliente || payload.cliente || payload.nome || "Cliente";
+  const ambiente = payload.ambiente || payload.local || "Ambiente informado";
+  const piso = result.tipo_piso === "vinilico" ? "Piso vinilico" : "Piso laminado";
+  const area = result.area_m2 || toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
+  const portas = result.qtd_portas ?? Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
+  const total = result.valor_total || 0;
+  const precoM2 = result.preco_m2 || (result.tipo_piso === "vinilico" ? 145 : 125);
+  const ajustePortas = result.ajuste_portas || portas * 44.8;
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <rect width="1080" height="1350" fill="#f3f0e8"/>
+  <rect x="70" y="70" width="940" height="1210" rx="34" fill="#ffffff" stroke="#1f2933" stroke-width="3"/>
+  <rect x="70" y="70" width="940" height="210" rx="34" fill="#111827"/>
+  <text x="120" y="155" font-family="Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">A.L.A DECOR</text>
+  <text x="120" y="220" font-family="Arial, sans-serif" font-size="28" fill="#e5e7eb">Pisos vinilicos e laminados</text>
+  <text x="120" y="345" font-family="Arial, sans-serif" font-size="46" font-weight="700" fill="#111827">Orcamento inicial</text>
+  <text x="120" y="400" font-family="Arial, sans-serif" font-size="25" fill="#6b7280">Estimativa para conferencia da equipe</text>
+
+  <rect x="120" y="460" width="840" height="340" rx="22" fill="#f9fafb" stroke="#d1d5db" stroke-width="2"/>
+  <text x="160" y="535" font-family="Arial, sans-serif" font-size="28" fill="#6b7280">Cliente</text>
+  <text x="160" y="585" font-family="Arial, sans-serif" font-size="40" font-weight="700" fill="#111827">${escapeXml(nome)}</text>
+  <text x="160" y="665" font-family="Arial, sans-serif" font-size="28" fill="#6b7280">Ambiente</text>
+  <text x="160" y="715" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(ambiente)}</text>
+
+  <rect x="120" y="840" width="260" height="145" rx="20" fill="#eef2ff"/>
+  <text x="150" y="895" font-family="Arial, sans-serif" font-size="24" fill="#4f46e5">Piso</text>
+  <text x="150" y="945" font-family="Arial, sans-serif" font-size="31" font-weight="700" fill="#111827">${escapeXml(piso)}</text>
+
+  <rect x="410" y="840" width="230" height="145" rx="20" fill="#ecfdf5"/>
+  <text x="440" y="895" font-family="Arial, sans-serif" font-size="24" fill="#047857">Metragem</text>
+  <text x="440" y="945" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(area.toLocaleString("pt-BR"))} m2</text>
+
+  <rect x="670" y="840" width="290" height="145" rx="20" fill="#fff7ed"/>
+  <text x="700" y="895" font-family="Arial, sans-serif" font-size="24" fill="#c2410c">Portas</text>
+  <text x="700" y="945" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#111827">${escapeXml(portas)} porta${portas === 1 ? "" : "s"}</text>
+
+  <line x1="120" y1="1050" x2="960" y2="1050" stroke="#d1d5db" stroke-width="2"/>
+  <text x="120" y="1110" font-family="Arial, sans-serif" font-size="27" fill="#374151">Base: ${escapeXml(area.toLocaleString("pt-BR"))} m2 x ${formatMoney(precoM2)}</text>
+  <text x="120" y="1160" font-family="Arial, sans-serif" font-size="27" fill="#374151">Instalacao/frete base: ${formatMoney(160)}</text>
+  <text x="120" y="1210" font-family="Arial, sans-serif" font-size="27" fill="#374151">Ajuste de portas: ${formatMoney(ajustePortas)}</text>
+
+  <rect x="120" y="1245" width="840" height="92" rx="20" fill="#111827"/>
+  <text x="160" y="1305" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#ffffff">Total estimado: ${escapeXml(formatMoney(total))}</text>
+</svg>`;
+
+  return new Response(svg, {
+    headers: {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "access-control-allow-origin": "*"
+    }
+  });
+}
+
+async function handleCrmApi(pathname, payload, requestUrl) {
+  if (pathname === "/api/crm/orcamento-imagem") {
+    return renderBudgetSvg(payload);
+  }
+
   if (pathname === "/api/crm/orcamento") {
     const result = buildBudget(payload);
     console.log("Orcamento solicitado pelo CRM", JSON.stringify({ payload, result }));
-    return json({ ok: true, ...result });
+    return json({
+      ok: true,
+      ...result,
+      imagem_url: buildBudgetImageUrl(requestUrl, payload)
+    });
   }
 
   if (pathname === "/api/crm/contrato") {
@@ -305,7 +395,7 @@ async function handleWebhook(request, env, ctx) {
 
   const pathname = normalizePath(request.url);
   if (isCrmPath(pathname)) {
-    const crmResponse = await handleCrmApi(pathname, payload);
+    const crmResponse = await handleCrmApi(pathname, payload, request.url);
     if (crmResponse) return crmResponse;
   }
 
@@ -367,6 +457,7 @@ function handleStatus(env) {
       "POST /api/webhook/lionchat",
       "POST /api/lionchat/webhook",
       "GET /api/crm/orcamento",
+      "GET /api/crm/orcamento-imagem",
       "POST /api/crm/orcamento",
       "POST /api/crm/contrato"
     ],
@@ -390,7 +481,7 @@ export default {
     }
 
     if (isCrmPath(pathname) && request.method === "GET") {
-      return handleCrmApi(pathname, parseSearchParams(request.url));
+      return handleCrmApi(pathname, parseSearchParams(request.url), request.url);
     }
 
     if (isWebhookPath(pathname) && request.method === "POST") {
