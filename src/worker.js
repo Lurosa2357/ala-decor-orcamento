@@ -264,7 +264,7 @@ function buildBudgetImageUrl(requestUrl, payload) {
   const normalizedPayload = { ...payload };
   const tipoRaw = String(normalizedPayload.tipo_piso || normalizedPayload.tipo || "").toLowerCase();
 
-  if (!tipoRaw.includes("vin")) {
+  if (tipoRaw.includes("vin")) {
     normalizedPayload.qtd_portas = 0;
     delete normalizedPayload.portas;
   }
@@ -283,7 +283,7 @@ function buildBudget(payload) {
   const tipo = tipoRaw.includes("vin") ? "vinilico" : "laminado";
   const area = toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
   const portasInformadas = Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
-  const portas = tipo === "laminado" ? 0 : portasInformadas;
+  const portas = tipo === "vinilico" ? 0 : portasInformadas;
   const nome = payload.nome_cliente || payload.cliente || payload.nome || "cliente";
   const ambiente = payload.ambiente || payload.local || "ambiente informado";
   const valorInformado = toNumber(payload.valor_total || payload.valor || payload.total);
@@ -297,7 +297,7 @@ function buildBudget(payload) {
 
   const precoM2 = tipo === "vinilico" ? 145 : 125;
   const freteInstalacaoBase = 160;
-  const ajustePortas = tipo === "laminado" ? 0 : portas * 44.8;
+  const ajustePortas = tipo === "vinilico" ? 0 : portas * 44.8;
   const total = valorInformado || (area * precoM2 + freteInstalacaoBase + ajustePortas);
 
   return {
@@ -329,7 +329,7 @@ function renderBudgetSvg(payload) {
   const ambiente = payload.ambiente || payload.local || "ambiente informado";
   const piso = result.tipo_piso === "vinilico" ? "Piso vinilico" : "Piso laminado";
   const area = result.area_m2 || toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
-  const portas = result.tipo_piso === "laminado"
+  const portas = result.tipo_piso === "vinilico"
     ? 0
     : result.qtd_portas ?? Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
   const total = result.valor_total || 0;
