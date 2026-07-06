@@ -1048,9 +1048,9 @@ function atualizarTipoPiso() {
   document.getElementById("campo_marca_laminado").classList.toggle("is-hidden", tipo !== "laminado");
   document.getElementById("campo_marca_vinilico").classList.toggle("is-hidden", tipo !== "vinilico");
   document.getElementById("campo_perimetro").classList.add("is-hidden");
-  document.getElementById("campo_portas").classList.toggle("is-hidden", tipo === "vinilico");
+  document.getElementById("campo_portas").classList.toggle("is-hidden", tipo === "laminado");
   document.getElementById("perimetro").value = "";
-  if (tipo === "vinilico") document.getElementById("portas").value = 0;
+  if (tipo === "laminado") document.getElementById("portas").value = 0;
   document.getElementById("piso_preco_cx").value = produto.precoCx.toFixed(2);
 }
 
@@ -1132,7 +1132,6 @@ function preencherImpressaoPremium(o) {
         "Rodapé de 5 cm",
         "Manta",
         "Prego",
-        o.portas > 0 ? "Perfil de porta" : "",
         "Mão de obra e material tudo incluso instalado."
       ].filter(Boolean);
 
@@ -1475,8 +1474,8 @@ function calcular() {
 
   const area = parseFloat(document.getElementById("area").value);
   const perimRaw = document.getElementById("perimetro").value.trim();
-  const portas = Math.max(0, parseInt(document.getElementById("portas").value) || 0);
   const {tipo, produto} = getProdutoSelecionado();
+  const portas = tipo === "laminado" ? 0 : Math.max(0, parseInt(document.getElementById("portas").value) || 0);
   const tipoLabel = tipo === "vinilico" ? "Piso Vinílico" : "Piso Laminado";
   const pisoPrecoCx = parseFloat(document.getElementById("piso_preco_cx").value) || produto.precoCx;
   const cliente = document.getElementById("cliente").value.trim();
@@ -1507,7 +1506,7 @@ function calcular() {
   const rolosManta = tipo === "laminado" ? arredondarQtd(metrosManta / PRECO.manta_m2_rolo) : 0;
   const totalManta = metrosManta * PRECO.manta_preco;
 
-  const totalPerfil = tipo === "laminado" ? portas * PRECO.perfil_preco : 0;
+  const totalPerfil = 0;
   const potesCola = tipo === "vinilico" ? 1 : arredondarQtd(area / PRECO.cola_cob);
   const totalCola = potesCola * PRECO.cola_preco;
   const unidPrego = arredondarQtd(area / PRECO.prego_cob);
@@ -1570,7 +1569,7 @@ function calcular() {
 
   if (tipo === "laminado") chipsData.push({lbl: "Manta", val: rolosManta + " rolo" + (rolosManta > 1 ? "s" : "")});
   if (tipo === "vinilico") chipsData.push({lbl: "Autonivelante", val: sacosAutonivelante + " sacos"});
-  if (portas > 0) chipsData.push({lbl: "Portas", val: portas + " unid."});
+  if (tipo !== "laminado" && portas > 0) chipsData.push({lbl: "Portas", val: portas + " unid."});
 
   document.getElementById("chips").innerHTML = chipsData.map(c =>
     `<div class="chip"><div class="chip-lbl">${c.lbl}</div><div class="chip-val">${c.val}</div></div>`
@@ -1590,8 +1589,7 @@ function calcular() {
 
   if (tipo === "laminado") {
     linhas.push(
-      row("Manta Lisa 2mm", "Durafloor", `${metrosManta} metros lineares`, `${rolosManta} rolo${rolosManta > 1 ? "s" : ""}`),
-      row("Perfil T de Porta", "Eucafloor Tecno", `${portas} unidade${portas !== 1 ? "s" : ""}`, "1 barra por porta")
+      row("Manta Lisa 2mm", "Durafloor", `${metrosManta} metros lineares`, `${rolosManta} rolo${rolosManta > 1 ? "s" : ""}`)
     );
   } else {
     linhas.push(

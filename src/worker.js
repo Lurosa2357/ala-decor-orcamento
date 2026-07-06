@@ -256,8 +256,15 @@ function buildBudgetImageUrl(requestUrl, payload) {
   const url = new URL(requestUrl);
   url.pathname = "/api/crm/orcamento-imagem";
   url.search = "";
+  const normalizedPayload = { ...payload };
+  const tipoRaw = String(normalizedPayload.tipo_piso || normalizedPayload.tipo || "").toLowerCase();
 
-  for (const [key, value] of Object.entries(payload)) {
+  if (!tipoRaw.includes("vin")) {
+    normalizedPayload.qtd_portas = 0;
+    normalizedPayload.portas = 0;
+  }
+
+  for (const [key, value] of Object.entries(normalizedPayload)) {
     if (value !== null && value !== undefined && String(value).trim()) {
       url.searchParams.set(key, String(value));
     }
@@ -270,7 +277,8 @@ function buildBudget(payload) {
   const tipoRaw = String(payload.tipo_piso || payload.tipo || "").toLowerCase();
   const tipo = tipoRaw.includes("vin") ? "vinilico" : "laminado";
   const area = toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
-  const portas = Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
+  const portasInformadas = Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
+  const portas = tipo === "laminado" ? 0 : portasInformadas;
   const nome = payload.nome_cliente || payload.cliente || payload.nome || "cliente";
   const ambiente = payload.ambiente || payload.local || "ambiente informado";
   const valorInformado = toNumber(payload.valor_total || payload.valor || payload.total);
@@ -284,7 +292,7 @@ function buildBudget(payload) {
 
   const precoM2 = tipo === "vinilico" ? 145 : 125;
   const freteInstalacaoBase = 160;
-  const ajustePortas = portas * 44.8;
+  const ajustePortas = tipo === "laminado" ? 0 : portas * 44.8;
   const total = valorInformado || (area * precoM2 + freteInstalacaoBase + ajustePortas);
 
   return {
@@ -301,7 +309,7 @@ function buildBudget(payload) {
       `${tipo === "vinilico" ? "piso vinílico" : "piso laminado"}, ${area.toLocaleString("pt-BR")} m², ${portas} porta${portas === 1 ? "" : "s"} no ${ambiente}.`,
       `Orçamento estimado: ${formatMoney(total)}.`,
       "Esse valor é uma estimativa inicial. Para fechar certinho, a equipe confere a planta/medidas e confirma o modelo do piso."
-    ].join("\n")
+    ].join("\n").replace(/, 0 portas? no /, " no ")
   };
 }
 
@@ -316,15 +324,17 @@ function renderBudgetSvg(payload) {
   const ambiente = payload.ambiente || payload.local || "ambiente informado";
   const piso = result.tipo_piso === "vinilico" ? "Piso vinilico" : "Piso laminado";
   const area = result.area_m2 || toNumber(payload.area_m2 || payload.area || payload.metragem || payload.medida_local);
-  const portas = result.qtd_portas ?? Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
+  const portas = result.tipo_piso === "laminado"
+    ? 0
+    : result.qtd_portas ?? Math.max(0, Math.round(toNumber(payload.qtd_portas || payload.portas)));
   const total = result.valor_total || 0;
   const precoM2 = area ? total / area : result.preco_m2 || (result.tipo_piso === "vinilico" ? 145 : 125);
   const entrada = total * 0.6;
   const servico = [
     `Fornecimento e instalacao de ${piso.toLowerCase()}`,
     `${ambiente} - ${area.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} m2`,
-    portas ? `${portas} porta${portas === 1 ? "" : "s"} / passagem${portas === 1 ? "" : "ns"} considerada${portas === 1 ? "" : "s"}` : "Portas/passagens a confirmar"
-  ];
+    portas ? `${portas} porta${portas === 1 ? "" : "s"} / passagem${portas === 1 ? "" : "ns"} considerada${portas === 1 ? "" : "s"}` : ""
+  ].filter(Boolean);
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1528" viewBox="0 0 1080 1528">
