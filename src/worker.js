@@ -26,6 +26,7 @@ function isWebhookPath(pathname) {
     "/api/lionchat/webhook",
     "/api/crm/orcamento-imagem",
     "/api/crm/orcamento",
+    "/api/crm/gerar-orcamento",
     "/api/crm/contrato"
   ].includes(pathname);
 }
@@ -35,7 +36,10 @@ function isLionChatPath(pathname) {
 }
 
 function isCrmPath(pathname) {
-  return pathname === "/api/crm/orcamento" || pathname === "/api/crm/orcamento-imagem" || pathname === "/api/crm/contrato";
+  return pathname === "/api/crm/orcamento" ||
+    pathname === "/api/crm/orcamento-imagem" ||
+    pathname === "/api/crm/gerar-orcamento" ||
+    pathname === "/api/crm/contrato";
 }
 
 function normalizeList(value, fallback) {
@@ -408,15 +412,22 @@ async function handleCrmApi(pathname, payload, requestUrl) {
     return renderBudgetSvg(payload);
   }
 
-  if (pathname === "/api/crm/orcamento") {
-    const result = buildBudget(payload);
-    console.log("Orcamento solicitado pelo CRM", JSON.stringify({ payload, result }));
+ if (pathname === "/api/crm/gerar-orcamento") {
+  const result = buildBudget(payload);
+
+  if (result.status === "precisa_dados") {
     return json({
-      ok: true,
-      ...result,
-      imagem_url: buildBudgetImageUrl(requestUrl, payload)
-    });
+      success: false,
+      error: result.mensagem
+    }, 400);
   }
+
+  return json({
+    success: true,
+    image_url: buildBudgetImageUrl(requestUrl, payload),
+    orcamento: result
+  });
+}
 
   if (pathname === "/api/crm/contrato") {
     return json({
