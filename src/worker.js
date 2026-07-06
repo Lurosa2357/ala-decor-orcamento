@@ -261,7 +261,7 @@ function buildBudgetImageUrl(requestUrl, payload) {
 
   if (!tipoRaw.includes("vin")) {
     normalizedPayload.qtd_portas = 0;
-    normalizedPayload.portas = 0;
+    delete normalizedPayload.portas;
   }
 
   for (const [key, value] of Object.entries(normalizedPayload)) {
