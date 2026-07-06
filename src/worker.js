@@ -518,6 +518,8 @@ function handleStatus(env) {
       "GET /api/crm/orcamento-imagem",
       "POST /api/crm/orcamento",
       "POST /api/crm/contrato"
+      "GET /api/crm/gerar-orcamento",
+"POST /api/crm/gerar-orcamento",
     ],
     lionchat_filter: {
       allowed_inbox_ids: normalizeList(env.ALLOWED_LIONCHAT_INBOX_IDS, DEFAULT_ALLOWED_INBOX_IDS),
