@@ -412,22 +412,36 @@ async function handleCrmApi(pathname, payload, requestUrl) {
     return renderBudgetSvg(payload);
   }
 
- if (pathname === "/api/crm/gerar-orcamento") {
-  const result = buildBudget(payload);
-
-  if (result.status === "precisa_dados") {
+  if (pathname === "/api/crm/orcamento") {
+    const result = buildBudget(payload);
+    console.log("Orcamento solicitado pelo CRM", JSON.stringify({ payload, result }));
     return json({
-      success: false,
-      error: result.mensagem
-    }, 400);
+      ok: true,
+      ...result,
+      imagem_url: buildBudgetImageUrl(requestUrl, payload),
+      image_url: buildBudgetImageUrl(requestUrl, payload)
+    });
   }
 
-  return json({
-    success: true,
-    image_url: buildBudgetImageUrl(requestUrl, payload),
-    orcamento: result
-  });
-}
+  if (pathname === "/api/crm/gerar-orcamento") {
+    const result = buildBudget(payload);
+
+    if (result.status === "precisa_dados") {
+      return json({
+        success: false,
+        ok: false,
+        error: result.mensagem
+      }, 400);
+    }
+
+    return json({
+      success: true,
+      ok: true,
+      imagem_url: buildBudgetImageUrl(requestUrl, payload),
+      image_url: buildBudgetImageUrl(requestUrl, payload),
+      orcamento: result
+    });
+  }
 
   if (pathname === "/api/crm/contrato") {
     return json({
@@ -517,9 +531,9 @@ function handleStatus(env) {
       "GET /api/crm/orcamento",
       "GET /api/crm/orcamento-imagem",
       "POST /api/crm/orcamento",
-      "POST /api/crm/contrato"
+      "POST /api/crm/contrato",
       "GET /api/crm/gerar-orcamento",
-"POST /api/crm/gerar-orcamento",
+      "POST /api/crm/gerar-orcamento"
     ],
     lionchat_filter: {
       allowed_inbox_ids: normalizeList(env.ALLOWED_LIONCHAT_INBOX_IDS, DEFAULT_ALLOWED_INBOX_IDS),
