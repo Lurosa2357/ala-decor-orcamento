@@ -252,6 +252,11 @@ function escapeXml(value) {
     .replace(/"/g, "&quot;");
 }
 
+function truncateText(value, maxLength) {
+  const text = String(value ?? "");
+  return text.length > maxLength ? text.slice(0, maxLength - 1).trimEnd() + "..." : text;
+}
+
 function buildBudgetImageUrl(requestUrl, payload) {
   const url = new URL(requestUrl);
   url.pathname = "/api/crm/orcamento-imagem";
@@ -335,6 +340,16 @@ function renderBudgetSvg(payload) {
     `${ambiente} - ${area.toLocaleString("pt-BR", { maximumFractionDigits: 2 })} m2`,
     portas ? `${portas} porta${portas === 1 ? "" : "s"} / passagem${portas === 1 ? "" : "ns"} considerada${portas === 1 ? "" : "s"}` : ""
   ].filter(Boolean);
+  const servicoSvg = servico
+    .slice(0, 3)
+    .map((linha, index) => {
+      const y = 795 + index * 38;
+      const family = index === 0 ? "Georgia, serif" : "Arial, sans-serif";
+      const size = index === 0 ? 22 : 19;
+      const weight = index === 0 ? "700" : "400";
+      return `<text x="120" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="#1a1a2e">${escapeXml(truncateText(linha, 39))}</text>`;
+    })
+    .join("\n  ");
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1528" viewBox="0 0 1080 1528">
@@ -372,17 +387,15 @@ function renderBudgetSvg(payload) {
   <rect x="95" y="700" width="890" height="248" fill="#ffffff" stroke="#dde3ec"/>
   <rect x="95" y="700" width="890" height="48" fill="#231a72"/>
   <text x="120" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">DESCRICAO DO SERVICO</text>
-  <text x="585" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">QTD</text>
-  <text x="675" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">UNID.</text>
-  <text x="760" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">PRECO/M2</text>
-  <text x="900" y="731" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">TOTAL</text>
-  <text x="120" y="795" font-family="Georgia, serif" font-size="24" font-weight="700" fill="#1a1a2e">${escapeXml(servico[0])}</text>
-  <text x="120" y="837" font-family="Arial, sans-serif" font-size="21" fill="#1a1a2e">${escapeXml(servico[1])}</text>
-  <text x="120" y="879" font-family="Arial, sans-serif" font-size="21" fill="#1a1a2e">${escapeXml(servico[2])}</text>
-  <text x="585" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">${escapeXml(area.toLocaleString("pt-BR", { maximumFractionDigits: 2 }))}</text>
-  <text x="685" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">m2</text>
-  <text x="770" y="820" font-family="Arial, sans-serif" font-size="23" fill="#1a1a2e">${escapeXml(formatMoney(precoM2))}</text>
-  <text x="880" y="820" font-family="Arial, sans-serif" font-size="23" font-weight="700" fill="#1a1a2e">${escapeXml(formatMoney(total))}</text>
+  <text x="610" y="731" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">QTD</text>
+  <text x="695" y="731" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">UNID.</text>
+  <text x="820" y="731" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">PRECO/M2</text>
+  <text x="965" y="731" text-anchor="end" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff">TOTAL</text>
+  ${servicoSvg}
+  <text x="610" y="820" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#1a1a2e">${escapeXml(area.toLocaleString("pt-BR", { maximumFractionDigits: 2 }))}</text>
+  <text x="695" y="820" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#1a1a2e">m2</text>
+  <text x="850" y="820" text-anchor="end" font-family="Arial, sans-serif" font-size="22" fill="#1a1a2e">${escapeXml(formatMoney(precoM2))}</text>
+  <text x="970" y="820" text-anchor="end" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1a1a2e">${escapeXml(formatMoney(total))}</text>
 
   <rect x="95" y="986" width="890" height="118" fill="#ffffff" stroke="#231a72" stroke-width="3"/>
   <text x="125" y="1032" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#6b7280">TOTAL DO PROJETO</text>
