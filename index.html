@@ -640,8 +640,8 @@
       </div>
       <div class="form-group">
         <label>Mão de Obra (R$ / m²)</label>
-        <input type="number" id="mao_obra" placeholder="Ex: 35" min="0" step="0.50">
-        <span class="hint">Valor cobrado por m² de instalação.</span>
+        <input type="number" id="mao_obra" placeholder="Ex: 35" min="0" step="0.50" readonly>
+        <span class="hint">Valor fixo: vinílico R$ 50/m² e laminado R$ 35/m².</span>
       </div>
 
       <div class="section-sep">Preços internos</div>
@@ -960,6 +960,8 @@ const PRECO = {
   primer_preco: 86.00,
   primer_cob: 30,
   frete: 160.00,
+  mao_obra_vinilico: 50.00,
+  mao_obra_laminado: 35.00,
 };
 
 const PRODUTOS = {
@@ -1052,6 +1054,7 @@ function atualizarTipoPiso() {
   document.getElementById("perimetro").value = "";
   if (tipo === "vinilico") document.getElementById("portas").value = 0;
   document.getElementById("piso_preco_cx").value = produto.precoCx.toFixed(2);
+  document.getElementById("mao_obra").value = (tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado).toFixed(2);
 }
 
 function carregarHistorico() {
@@ -1516,7 +1519,7 @@ function calcular() {
   const totalAutonivelante = sacosAutonivelante * PRECO.autonivelante_preco;
   const baldesPrimer = tipo === "vinilico" ? arredondarQtd(area / PRECO.primer_cob) : 0;
   const totalPrimer = baldesPrimer * PRECO.primer_preco;
-  const maoObraValor = parseFloat(document.getElementById("mao_obra").value) || 0;
+  const maoObraValor = tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado;
   const maoObra = area * maoObraValor;
 
   const totalGeral = totalPiso + totalRod + totalManta + totalPerfil + totalCola + totalPrego + totalAutonivelante + totalPrimer + PRECO.frete + maoObra;

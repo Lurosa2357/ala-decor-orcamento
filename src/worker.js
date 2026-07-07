@@ -296,6 +296,8 @@ function buildBudget(payload) {
   }
 
   const precoM2 = tipo === "vinilico" ? 145 : 125;
+  const maoObraM2 = tipo === "vinilico" ? 50 : 35;
+  const maoObraTotal = area * maoObraM2;
   const freteInstalacaoBase = 160;
   const ajustePortas = tipo === "vinilico" ? 0 : portas * 44.8;
   const total = valorInformado || (area * precoM2 + freteInstalacaoBase + ajustePortas);
@@ -306,6 +308,8 @@ function buildBudget(payload) {
     area_m2: area,
     qtd_portas: portas,
     preco_m2: precoM2,
+    mao_obra_m2: maoObraM2,
+    mao_obra_total: maoObraTotal,
     frete_instalacao_base: freteInstalacaoBase,
     ajuste_portas: ajustePortas,
     valor_total: total,
