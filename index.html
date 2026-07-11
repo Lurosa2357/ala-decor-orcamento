@@ -906,6 +906,7 @@ Mao de obra especializada com instalacao completa</textarea>
           <div class="res-address" id="contract-preview-subtitle">-</div>
         </div>
         <div class="res-actions">
+          <button class="btn-reset" onclick="editarContrato()" type="button">Editar</button>
           <button class="btn-whatsapp" onclick="enviarContratoWhatsApp()" type="button">Enviar WhatsApp</button>
           <button class="btn-print" onclick="imprimirContrato()" type="button">Imprimir / PDF</button>
         </div>
@@ -1306,6 +1307,9 @@ function dadosContrato() {
 function montarContratoHTML(c) {
   const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
   const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
+  const nascimentoHtml = nascimentoTexto
+    ? `<div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto)}</span></div>`
+    : "";
   const escopoHtml = c.escopo.map(item => `<li>${esc(item)};</li>`).join("");
   return [
     `<h3>1. Das Partes</h3>`,
@@ -1315,7 +1319,7 @@ function montarContratoHTML(c) {
         <div class="contract-field"><strong>Nome:</strong><span>${esc(c.cliente)}</span></div>
         <div class="contract-field"><strong>RG:</strong><span>${esc(c.rg || "Opcional")}</span></div>
         <div class="contract-field"><strong>CPF/CNPJ:</strong><span>${esc(c.documento || "Opcional")}</span></div>
-        <div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto || "Opcional")}</span></div>
+        ${nascimentoHtml}
         <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(c.endereco || "Opcional")}</span></div>
         <div class="contract-field"><strong>Telefone:</strong><span>${esc(c.telefone)}</span></div>
       </div>
@@ -1363,7 +1367,7 @@ function montarContratoTexto(c) {
     "Cliente: " + c.cliente,
     "RG: " + (c.rg || "Opcional"),
     "CPF/CNPJ: " + (c.documento || "Opcional"),
-    "Data de nascimento: " + (nascimentoTexto || "Opcional"),
+    nascimentoTexto ? "Data de nascimento: " + nascimentoTexto : "",
     "Telefone: " + c.telefone,
     "Endereco da obra: " + (c.endereco || "Opcional"),
     "Contratada: " + CONTRATADA_NOME,
@@ -1402,6 +1406,12 @@ function montarContratoTexto(c) {
     "A.L.A DECOR - Pisos Vinilicos e Laminados",
     "(11) 97780-3209"
   ].filter(Boolean).join("\n");
+}
+
+function editarContrato() {
+  document.getElementById("contract-preview").classList.remove("visible");
+  document.getElementById("contrato_cliente").scrollIntoView({behavior: "smooth", block: "center"});
+  document.getElementById("contrato_cliente").focus();
 }
 
 function gerarContrato() {
