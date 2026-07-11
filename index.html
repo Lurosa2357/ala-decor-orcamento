@@ -483,7 +483,14 @@
     .contract-text .contract-payment th, .contract-text .contract-payment td { padding: 7px 9px; font-size: 12px; }
     .contract-sign { display: none; grid-template-columns: 1fr 1fr; gap: 44px; padding: 28px 58px 0; text-align: center; font-size: 12px; }
     .contract-sign div { border-top: 1px solid var(--text); padding-top: 9px; }
-    .input-section, .header, .results > :not(.premium-print), .footer { display: none !important; }
+    body:not(.printing-contract) .input-section,
+    body:not(.printing-contract) .header,
+    body:not(.printing-contract) .results > :not(.premium-print),
+    body:not(.printing-contract) .footer { display: none !important; }
+    body.printing-contract .input-section,
+    body.printing-contract .header,
+    body.printing-contract .results,
+    body.printing-contract .footer { display: none !important; }
     /*
     .results { display: block !important; }
     .container { max-width: none; margin: 0; }
