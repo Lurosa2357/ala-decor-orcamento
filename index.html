@@ -899,6 +899,11 @@ Mao de obra especializada com instalacao completa</textarea>
       </div>
     </div>
 
+    <div class="card input-section">
+      <div class="card-title">Contratos Salvos</div>
+      <div class="history-list" id="contracts-list"></div>
+    </div>
+
     <div class="card contract-preview" id="contract-preview">
       <div class="results-header">
         <div>
@@ -994,6 +999,7 @@ let ultimoOrcamento = null;
 let ultimoContrato = null;
 let limparImpressaoContratoTimer = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
+const CONTRATOS_KEY = "alaDecorContratos";
 const CONTRATADA_NOME = "ALADECOR PISOS VINILICOS E LAMINADOS / 41.374.458 AUGUSTO SERGIO ALVES ROSA - ME";
 const CONTRATADA_CNPJ = "41.374.458/0001-98";
 const CONTRATADA_ENDERECO = "Rua Bauru, 129 - Jardim do Carmo - Itaquaquecetuba/SP";
@@ -1075,6 +1081,116 @@ function carregarHistorico() {
 
 function salvarHistorico(lista) {
   localStorage.setItem(HISTORICO_KEY, JSON.stringify(lista.slice(0, 50)));
+}
+
+function carregarContratos() {
+  try {
+    return JSON.parse(localStorage.getItem(CONTRATOS_KEY) || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function salvarContratos(lista) {
+  localStorage.setItem(CONTRATOS_KEY, JSON.stringify(lista.slice(0, 50)));
+}
+
+function salvarContrato(contrato) {
+  const lista = carregarContratos();
+  const existente = lista.findIndex(item => item.id === contrato.id);
+
+  if (existente >= 0) {
+    lista[existente] = contrato;
+  } else {
+    lista.unshift(contrato);
+  }
+
+  salvarContratos(lista);
+  renderizarContratos();
+}
+
+function renderizarContratos() {
+  const alvo = document.getElementById("contracts-list");
+  if (!alvo) return;
+  const lista = carregarContratos();
+
+  if (!lista.length) {
+    alvo.innerHTML = '<div class="history-empty">Nenhum contrato salvo ainda. Ao gerar um contrato, ele aparece aqui automaticamente neste aparelho.</div>';
+    return;
+  }
+
+  alvo.innerHTML = lista.map(item => `
+    <div class="history-item">
+      <div>
+        <div class="history-title">${esc(item.cliente)}</div>
+        <div class="history-meta">${esc(item.servico)} - ${item.criadoEm}</div>
+        <div class="history-meta">${esc(item.telefone)} - entrada ${item.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}% (${fmt(item.valorEntrada)})</div>
+        <div class="history-value">${fmt(item.valorTotal)}</div>
+      </div>
+      <div class="history-actions">
+        <button class="btn-reset btn-small" onclick="editarContratoSalvo('${item.id}')">Editar</button>
+        <button class="btn-print btn-small" onclick="imprimirContratoSalvo('${item.id}')">PDF</button>
+        <button class="btn-whatsapp btn-small" onclick="enviarContratoSalvoWhatsApp('${item.id}')">WhatsApp</button>
+        <button class="btn-danger btn-small" onclick="apagarContrato('${item.id}')">Apagar</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function aplicarContratoNoFormulario(c) {
+  document.getElementById("contrato_cliente").value = c.cliente || "";
+  document.getElementById("contrato_documento").value = c.documento || "";
+  document.getElementById("contrato_rg").value = c.rg || "";
+  document.getElementById("contrato_nascimento").value = c.nascimento || "";
+  document.getElementById("contrato_telefone").value = c.telefone || "";
+  document.getElementById("contrato_endereco").value = c.endereco || "";
+  document.getElementById("contrato_valor").value = c.valorTotal ? c.valorTotal.toFixed(2) : "";
+  document.getElementById("contrato_entrada_percentual").value = c.percentualEntrada ?? 60;
+  document.getElementById("contrato_entrada_forma").value = c.formaEntrada || "Pix";
+  document.getElementById("contrato_inicio").value = c.inicio || "";
+  document.getElementById("contrato_prazo").value = c.prazo || "1 a 2 dias uteis";
+  document.getElementById("contrato_servico").value = c.servico || "";
+  document.getElementById("contrato_escopo").value = (c.escopo || []).join("\n");
+  document.getElementById("contrato_observacoes").value = c.observacoes || "";
+  atualizarEntradaContrato();
+}
+
+function editarContratoSalvo(id) {
+  const contrato = carregarContratos().find(item => item.id === id);
+  if (!contrato) return;
+  ultimoContrato = contrato;
+  aplicarContratoNoFormulario(contrato);
+  mostrarAba("contratos");
+  document.getElementById("contract-preview").classList.remove("visible");
+  document.getElementById("contrato_cliente").scrollIntoView({behavior: "smooth", block: "center"});
+  document.getElementById("contrato_cliente").focus();
+}
+
+function imprimirContratoSalvo(id) {
+  const contrato = carregarContratos().find(item => item.id === id);
+  if (!contrato) return;
+  ultimoContrato = contrato;
+  document.getElementById("contract-print-text").innerHTML = montarContratoHTML(contrato);
+  document.getElementById("contract-sign-client").textContent = contrato.cliente;
+  document.body.classList.add("printing-contract");
+  window.removeEventListener("afterprint", limparModoImpressaoContrato);
+  window.addEventListener("afterprint", limparModoImpressaoContrato, { once: true });
+  setTimeout(() => {
+    window.print();
+    limparImpressaoContratoTimer = setTimeout(limparModoImpressaoContrato, 10000);
+  }, 80);
+}
+
+function enviarContratoSalvoWhatsApp(id) {
+  const contrato = carregarContratos().find(item => item.id === id);
+  if (!contrato) return;
+  window.open("https://wa.me/?text=" + encodeURIComponent(montarContratoTexto(contrato)), "_blank");
+}
+
+function apagarContrato(id) {
+  if (!confirm("Apagar este contrato salvo?")) return;
+  salvarContratos(carregarContratos().filter(item => item.id !== id));
+  renderizarContratos();
 }
 
 function salvarOrcamento(orcamento) {
@@ -1210,6 +1326,7 @@ function preencherContratoDoOrcamento(id) {
   const lista = carregarHistorico();
   const orcamento = lista.find(item => item.id === id);
   if (!orcamento) return;
+  ultimoContrato = null;
 
   document.getElementById("contrato_cliente").value = orcamento.cliente || "";
   document.getElementById("contrato_documento").value = orcamento.documento || "";
@@ -1284,6 +1401,8 @@ function dadosContrato() {
     .map(item => item.trim())
     .filter(Boolean);
   return {
+    id: ultimoContrato && ultimoContrato.id ? ultimoContrato.id : Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    criadoEm: ultimoContrato && ultimoContrato.criadoEm ? ultimoContrato.criadoEm : new Date().toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"}),
     cliente: document.getElementById("contrato_cliente").value.trim(),
     documento: document.getElementById("contrato_documento").value.trim(),
     rg: document.getElementById("contrato_rg").value.trim(),
@@ -1418,6 +1537,7 @@ function gerarContrato() {
   if (!validarContrato()) return;
   ultimoContrato = dadosContrato();
   const html = montarContratoHTML(ultimoContrato);
+  salvarContrato(ultimoContrato);
   document.getElementById("contract-preview-title").textContent = "Contrato - " + ultimoContrato.cliente;
   document.getElementById("contract-preview-subtitle").textContent = fmt(ultimoContrato.valorTotal) + " - entrada " + ultimoContrato.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "% (" + fmt(ultimoContrato.valorEntrada) + ") via " + ultimoContrato.formaEntrada;
   document.getElementById("contract-preview-box").innerHTML = `<h2>Contrato de Prestacao de Servicos - Aladecor</h2>${html}`;
@@ -1652,6 +1772,7 @@ function resetar() {
 
 prepararCamposIniciais();
 renderizarHistorico();
+renderizarContratos();
 </script>
 </body>
 </html>
