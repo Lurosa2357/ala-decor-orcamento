@@ -760,7 +760,7 @@
           <tr>
             <td class="pix"><span id="print-pix">R$ 0,00</span></td>
             <td>Parcelamento em até 12x no cartão de crédito com a taxa do próprio cartão.</td>
-            <td>60% do valor como sinal de confirmação da obra + restante no término do serviço.</td>
+            <td><strong id="print-entrada">R$ 0,00</strong> de entrada + <strong id="print-saldo">R$ 0,00</strong> no término do serviço.</td>
           </tr>
         </table>
 
@@ -1264,6 +1264,8 @@ function montarMensagemWhatsApp(o) {
     o.portas > 0 ? "Perfis de porta: " + o.portas + " unid." : "",
     "",
     "Valor total estimado: " + fmt(o.totalGeral),
+    "Entrada 60%: " + fmt(o.totalGeral * 0.60),
+    "Restante na conclusão: " + fmt(o.totalGeral * 0.40),
     "",
     "Observações:",
     "Parcelamos em até 12x no cartão de crédito com a taxa do próprio cartão. Pedimos 60% do valor como sinal de confirmação da obra. Instalação rápida - de 1 a 2 dias.",
@@ -1289,7 +1291,7 @@ function preencherImpressaoPremium(o) {
         "Primer",
         "Cola para rodapé",
         "Prego",
-        "Mão de obra e material tudo incluso instalado."
+        "Serviço completo: mão de obra e materiais inclusos."
       ]
     : [
         o.produtoNome || "Piso Laminado",
@@ -1297,7 +1299,7 @@ function preencherImpressaoPremium(o) {
         "Manta",
         "Prego",
         o.portas > 0 ? "Perfil de porta" : "",
-        "Mão de obra e material tudo incluso instalado."
+        "Serviço completo: mão de obra e materiais inclusos."
       ].filter(Boolean);
 
   document.getElementById("print-numero").textContent = o.orcamentoNumero;
@@ -1312,6 +1314,8 @@ function preencherImpressaoPremium(o) {
   document.getElementById("print-total-linha").textContent = fmt(o.totalGeral);
   document.getElementById("print-total").textContent = fmt(o.totalGeral);
   document.getElementById("print-pix").textContent = fmt(o.totalGeral);
+  document.getElementById("print-entrada").textContent = fmt(o.totalGeral * 0.60);
+  document.getElementById("print-saldo").textContent = fmt(o.totalGeral * 0.40);
   document.getElementById("print-assinatura-cliente").textContent = o.cliente;
 }
 
