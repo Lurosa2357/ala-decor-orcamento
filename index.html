@@ -167,6 +167,8 @@
 
   .price-ref strong { display: block; font-size: 16px; font-weight: 800; color: var(--purple); }
   .price-ref span { color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .price-ref label { display: block; font-size: 11px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: .4px; }
+  .price-ref input { min-height: 36px; margin: 6px 0; padding: 8px 10px; font-size: 14px; font-weight: 800; background: #fff; }
   .is-hidden { display: none !important; }
 
   .actions-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
@@ -643,24 +645,26 @@
       <div class="form-group" id="campo_portas">
         <label>Número de Portas</label>
         <input type="number" id="portas" placeholder="Ex: 3" min="0" value="0">
-        <span class="hint">Cada porta usa 1 perfil T de 1,8 m.</span>
+        <span class="hint">Cada porta usa 1 perfil T de 0,9 m.</span>
       </div>
       <div class="form-group">
         <label>Mão de Obra (R$ / m²)</label>
-        <input type="number" id="mao_obra" placeholder="Ex: 35" min="0" step="0.50" readonly>
-        <span class="hint">Valor fixo: vinílico R$ 50/m² e laminado R$ 35/m².</span>
+        <input type="number" id="mao_obra" placeholder="Ex: 35" min="0" step="0.50">
+        <span class="hint">Sugestão: vinílico R$ 50/m² e laminado R$ 35/m². Pode editar manualmente.</span>
       </div>
 
       <div class="section-sep">Preços internos</div>
       <div class="price-ref-grid">
         <div class="price-ref"><strong>Laminado</strong><span>Eucafloor, Durafloor e Quick-Step com preços dos catálogos</span></div>
         <div class="price-ref"><strong>Vinílico</strong><span>Ecomax, Durafloor e Tarkett com preços dos catálogos</span></div>
-        <div class="price-ref"><strong>R$ 10,56</strong><span>Madebene Supreme 5cm Branco<br>2,16 ml por barra</span></div>
-        <div class="price-ref"><strong>R$ 59,00</strong><span>Autonivelante Protec 20kg<br>base: 1 saco a cada 3 m²</span></div>
-        <div class="price-ref"><strong>R$ 86,00</strong><span>Primer Protec<br>base: 1 balde a cada 30 m²</span></div>
-        <div class="price-ref"><strong>R$ 28,00</strong><span>Cola para rodapé / pote</span></div>
-        <div class="price-ref"><strong>R$ 15,00</strong><span>Prego 10x11 / pacote<br>1 pacote a cada 30 m²</span></div>
-        <div class="price-ref"><strong>R$ 160,00</strong><span>Frete fixo</span></div>
+        <div class="price-ref"><label>Rodapé (R$ / barra)</label><input type="number" id="preco_rodape" min="0" step="0.01" value="10.56"><span>Madebene Supreme 5cm Branco<br>2,16 ml por barra</span></div>
+        <div class="price-ref"><label>Perfil T (R$ / porta)</label><input type="number" id="preco_perfil" min="0" step="0.01" value="44.80"><span>Cada porta usa 1 perfil T de 0,9 m</span></div>
+        <div class="price-ref"><label>Manta (R$ / m²)</label><input type="number" id="preco_manta" min="0" step="0.01" value="7.50"><span>Usado apenas no laminado</span></div>
+        <div class="price-ref"><label>Autonivelante (R$ / saco)</label><input type="number" id="preco_autonivelante" min="0" step="0.01" value="59.00"><span>Protec 20kg<br>base: 1 saco a cada 3 m²</span></div>
+        <div class="price-ref"><label>Primer (R$ / balde)</label><input type="number" id="preco_primer" min="0" step="0.01" value="86.00"><span>Protec<br>base: 1 balde a cada 30 m²</span></div>
+        <div class="price-ref"><label>Cola (R$ / pote)</label><input type="number" id="preco_cola" min="0" step="0.01" value="28.00"><span>Cola para rodapé</span></div>
+        <div class="price-ref"><label>Prego (R$ / pacote)</label><input type="number" id="preco_prego" min="0" step="0.01" value="15.00"><span>Prego 10x11<br>1 pacote a cada 30 m²</span></div>
+        <div class="price-ref"><label>Frete (R$)</label><input type="number" id="preco_frete" min="0" step="0.01" value="160.00"><span>Valor editável por orçamento</span></div>
       </div>
     </div>
     <div class="actions-row">
@@ -998,6 +1002,8 @@ const PRODUTOS = {
 let ultimoOrcamento = null;
 let ultimoContrato = null;
 let limparImpressaoContratoTimer = null;
+let ultimoPrecoCaixaSugerido = null;
+let ultimaMaoObraSugerida = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
 const CONTRATOS_KEY = "alaDecorContratos";
 const CONTRATADA_NOME = "ALADECOR PISOS VINILICOS E LAMINADOS / 41.374.458 AUGUSTO SERGIO ALVES ROSA - ME";
@@ -1032,6 +1038,17 @@ function esc(valor) {
 
 function numeroCampo(id) {
   return parseFloat(document.getElementById(id).value.replace(",", ".")) || 0;
+}
+
+function atualizarPrecosInternos() {
+  PRECO.rod_preco = numeroCampo("preco_rodape") || PRECO.rod_preco;
+  PRECO.perfil_preco = numeroCampo("preco_perfil") || PRECO.perfil_preco;
+  PRECO.manta_preco = numeroCampo("preco_manta") || PRECO.manta_preco;
+  PRECO.autonivelante_preco = numeroCampo("preco_autonivelante") || PRECO.autonivelante_preco;
+  PRECO.primer_preco = numeroCampo("preco_primer") || PRECO.primer_preco;
+  PRECO.cola_preco = numeroCampo("preco_cola") || PRECO.cola_preco;
+  PRECO.prego_preco = numeroCampo("preco_prego") || PRECO.prego_preco;
+  PRECO.frete = numeroCampo("preco_frete") || PRECO.frete;
 }
 
 function atualizarEntradaContrato() {
@@ -1069,14 +1086,26 @@ function arredondarQtd(valor) {
 
 function atualizarTipoPiso() {
   const {tipo, produto} = getProdutoSelecionado();
+  const campoPrecoCx = document.getElementById("piso_preco_cx");
+  const campoMaoObra = document.getElementById("mao_obra");
+  const precoSugerido = produto.precoCx;
+  const maoObraSugerida = tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado;
+  const precoAtual = parseFloat(campoPrecoCx.value);
+  const maoObraAtual = parseFloat(campoMaoObra.value);
   document.getElementById("campo_marca_laminado").classList.toggle("is-hidden", tipo !== "laminado");
   document.getElementById("campo_marca_vinilico").classList.toggle("is-hidden", tipo !== "vinilico");
   document.getElementById("campo_perimetro").classList.add("is-hidden");
   document.getElementById("campo_portas").classList.toggle("is-hidden", tipo === "vinilico");
   document.getElementById("perimetro").value = "";
   if (tipo === "vinilico") document.getElementById("portas").value = 0;
-  document.getElementById("piso_preco_cx").value = produto.precoCx.toFixed(2);
-  document.getElementById("mao_obra").value = (tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado).toFixed(2);
+  if (!campoPrecoCx.value.trim() || (ultimoPrecoCaixaSugerido !== null && Math.abs(precoAtual - ultimoPrecoCaixaSugerido) < 0.005)) {
+    campoPrecoCx.value = precoSugerido.toFixed(2);
+  }
+  if (!campoMaoObra.value.trim() || (ultimaMaoObraSugerida !== null && Math.abs(maoObraAtual - ultimaMaoObraSugerida) < 0.005)) {
+    campoMaoObra.value = maoObraSugerida.toFixed(2);
+  }
+  ultimoPrecoCaixaSugerido = precoSugerido;
+  ultimaMaoObraSugerida = maoObraSugerida;
 }
 
 function carregarHistorico() {
@@ -1619,6 +1648,7 @@ function validarObrigatorios() {
 
 function calcular() {
   if (!validarObrigatorios()) return;
+  atualizarPrecosInternos();
 
   const area = parseFloat(document.getElementById("area").value);
   const perimRaw = document.getElementById("perimetro").value.trim();
@@ -1663,7 +1693,7 @@ function calcular() {
   const totalAutonivelante = sacosAutonivelante * PRECO.autonivelante_preco;
   const baldesPrimer = tipo === "vinilico" ? arredondarQtd(area / PRECO.primer_cob) : 0;
   const totalPrimer = baldesPrimer * PRECO.primer_preco;
-  const maoObraValor = tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado;
+  const maoObraValor = parseFloat(document.getElementById("mao_obra").value) || (tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado);
   const maoObra = area * maoObraValor;
 
   const totalGeral = totalPiso + totalRod + totalManta + totalPerfil + totalCola + totalPrego + totalAutonivelante + totalPrimer + PRECO.frete + maoObra;
@@ -1738,7 +1768,7 @@ function calcular() {
   if (tipo === "laminado") {
     linhas.push(
       row("Manta Lisa 2mm", "Durafloor", `${metrosManta} metros lineares`, `${rolosManta} rolo${rolosManta > 1 ? "s" : ""}`),
-      row("Perfil T de Porta", "Eucafloor Tecno", `${portas} unidade${portas !== 1 ? "s" : ""}`, "1 barra por porta")
+      row("Perfil T de Porta", "Eucafloor Tecno", `${portas} unidade${portas !== 1 ? "s" : ""}`, "1 perfil T de 0,9 m por porta")
     );
   } else {
     linhas.push(
