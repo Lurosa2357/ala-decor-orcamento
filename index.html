@@ -645,6 +645,30 @@
         <input type="number" id="piso_preco_cx" placeholder="Ex: 111,60" min="0" step="0.01" required>
         <span class="hint">Use o valor atual da caixa da marca escolhida.</span>
       </div>
+      <div class="section-sep">Rodapé</div>
+      <div class="form-group">
+        <label>Marca / Linha do Rodapé</label>
+        <select id="rodape_modelo" onchange="atualizarRodape()">
+          <option value="madebene_supreme_5">Madebene Supreme 5cm Branco - 2,16 ml/barra</option>
+          <option value="eucafloor_estilo_5">Eucafloor Estilo 5cm - 2,40 ml/barra</option>
+          <option value="durafloor_essencial_5">Durafloor Essencial 5cm - 2,10 ml/barra</option>
+          <option value="start_floor_rodape">Start Floor Rodapé - preencher manual</option>
+          <option value="manual">Outro / Manual</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Nome do Rodapé</label>
+        <input type="text" id="rodape_nome" placeholder="Ex: Rodapé branco MDF de 7 cm" required>
+        <span class="hint">O sistema sugere pela opção escolhida, mas pode editar.</span>
+      </div>
+      <div class="form-group">
+        <label>Metros por Barra do Rodapé</label>
+        <input type="number" id="rodape_ml" placeholder="Ex: 2,16" min="0.01" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label>Preço da Barra do Rodapé (R$)</label>
+        <input type="number" id="rodape_preco" placeholder="Ex: 10,56" min="0" step="0.01" required>
+      </div>
       <div class="section-sep">Medidas da Planta</div>
       <div class="form-group">
         <label>Área Total do Piso (m²) *</label>
@@ -671,7 +695,6 @@
       <div class="price-ref-grid">
         <div class="price-ref"><strong>Laminado</strong><span>Eucafloor, Durafloor e Quick-Step com preços dos catálogos</span></div>
         <div class="price-ref"><strong>Vinílico</strong><span>Ecomax, Durafloor e Tarkett com preços dos catálogos</span></div>
-        <div class="price-ref"><label>Rodapé (R$ / barra)</label><input type="number" id="preco_rodape" min="0" step="0.01" value="10.56"><span>Madebene Supreme 5cm Branco<br>2,16 ml por barra</span></div>
         <div class="price-ref"><label>Perfil T (R$ / porta)</label><input type="number" id="preco_perfil" min="0" step="0.01" value="44.80"><span>Cada porta usa 1 perfil T de 0,9 m</span></div>
         <div class="price-ref"><label>Manta (R$ / m²)</label><input type="number" id="preco_manta" min="0" step="0.01" value="7.50"><span>Usado apenas no laminado</span></div>
         <div class="price-ref"><label>Autonivelante (R$ / saco)</label><input type="number" id="preco_autonivelante" min="0" step="0.01" value="59.00"><span>Protec 20kg<br>base: 1 saco a cada 3 m²</span></div>
@@ -1022,12 +1045,21 @@ const PRODUTOS = {
   }
 };
 
+const RODAPES = {
+  madebene_supreme_5: {nome: "Rodapé Supreme 5 cm Branco", marca: "Madebene", ml: 2.16, preco: 10.56},
+  eucafloor_estilo_5: {nome: "Rodapé Estilo 5 cm", marca: "Eucafloor", ml: 2.40, preco: 18.17},
+  durafloor_essencial_5: {nome: "Rodapé Essencial 5 cm", marca: "Durafloor", ml: 2.10, preco: 14.89},
+  start_floor_rodape: {nome: "Rodapé Start Floor", marca: "Start Floor", ml: 0, preco: 0},
+  manual: {nome: "", marca: "Manual", ml: 0, preco: 0},
+};
+
 let ultimoOrcamento = null;
 let ultimoContrato = null;
 let limparImpressaoContratoTimer = null;
 let ultimaMetragemCaixaSugerida = null;
 let ultimoPrecoCaixaSugerido = null;
 let ultimaMaoObraSugerida = null;
+let ultimoRodapeSugerido = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
 const CONTRATOS_KEY = "alaDecorContratos";
 const CONTRATADA_NOME = "ALADECOR PISOS VINILICOS E LAMINADOS / 41.374.458 AUGUSTO SERGIO ALVES ROSA - ME";
@@ -1065,7 +1097,6 @@ function numeroCampo(id) {
 }
 
 function atualizarPrecosInternos() {
-  PRECO.rod_preco = numeroCampo("preco_rodape") || PRECO.rod_preco;
   PRECO.perfil_preco = numeroCampo("preco_perfil") || PRECO.perfil_preco;
   PRECO.manta_preco = numeroCampo("preco_manta") || PRECO.manta_preco;
   PRECO.autonivelante_preco = numeroCampo("preco_autonivelante") || PRECO.autonivelante_preco;
@@ -1073,6 +1104,29 @@ function atualizarPrecosInternos() {
   PRECO.cola_preco = numeroCampo("preco_cola") || PRECO.cola_preco;
   PRECO.prego_preco = numeroCampo("preco_prego") || PRECO.prego_preco;
   PRECO.frete = numeroCampo("preco_frete") || PRECO.frete;
+}
+
+function getRodapeSelecionado() {
+  const chave = document.getElementById("rodape_modelo").value;
+  return RODAPES[chave] || RODAPES.manual;
+}
+
+function atualizarRodape() {
+  const rodape = getRodapeSelecionado();
+  const campoNome = document.getElementById("rodape_nome");
+  const campoMl = document.getElementById("rodape_ml");
+  const campoPreco = document.getElementById("rodape_preco");
+  const nomeAtual = campoNome.value.trim();
+  const mlAtual = parseFloat(campoMl.value);
+  const precoAtual = parseFloat(campoPreco.value);
+  const podeTrocarNome = !nomeAtual || (ultimoRodapeSugerido && nomeAtual === ultimoRodapeSugerido.nome);
+  const podeTrocarMl = !campoMl.value.trim() || (ultimoRodapeSugerido && Math.abs(mlAtual - ultimoRodapeSugerido.ml) < 0.001);
+  const podeTrocarPreco = !campoPreco.value.trim() || (ultimoRodapeSugerido && Math.abs(precoAtual - ultimoRodapeSugerido.preco) < 0.005);
+
+  if (podeTrocarNome) campoNome.value = rodape.nome;
+  if (podeTrocarMl) campoMl.value = rodape.ml > 0 ? String(rodape.ml) : "";
+  if (podeTrocarPreco) campoPreco.value = rodape.preco > 0 ? rodape.preco.toFixed(2) : "";
+  ultimoRodapeSugerido = rodape;
 }
 
 function atualizarEntradaContrato() {
@@ -1291,7 +1345,7 @@ function montarMensagemWhatsApp(o) {
     "Tipo: " + (o.tipoLabel || "Piso Laminado"),
     "Produto: " + (o.produtoNome || "Piso Laminado"),
     "Piso: " + o.caixas + " caixas",
-    "Rodapé: " + o.barras + " barras",
+    "Rodapé: " + (o.rodapeNome || "Rodapé") + " - " + o.barras + " barras",
     o.tipo === "vinilico" ? "Autonivelante: " + o.sacosAutonivelante + " sacos" : "Manta: " + o.rolosManta + " rolo" + (o.rolosManta > 1 ? "s" : ""),
     o.tipo === "vinilico" ? "Primer: " + o.baldesPrimer + " balde" + (o.baldesPrimer > 1 ? "s" : "") : "",
     o.portas > 0 ? "Perfis de porta: " + o.portas + " unid." : "",
@@ -1319,7 +1373,7 @@ function preencherImpressaoPremium(o) {
   const servicoPrint = o.tipo === "vinilico"
     ? [
         o.produtoNome || "Piso Vinílico",
-        "Rodapé de 5 cm",
+        o.rodapeNome || "Rodapé de 5 cm",
         "Autonivelante",
         "Primer",
         "Cola para rodapé",
@@ -1328,7 +1382,7 @@ function preencherImpressaoPremium(o) {
       ]
     : [
         o.produtoNome || "Piso Laminado",
-        "Rodapé de 5 cm",
+        o.rodapeNome || "Rodapé de 5 cm",
         "Manta",
         "Prego",
         o.portas > 0 ? "Perfil de porta" : "",
@@ -1657,6 +1711,7 @@ function prepararCamposIniciais() {
   if (!validade.value) validade.value = validadePadrao.toISOString().slice(0, 10);
   if (!numero.value) numero.value = String(Math.floor(100000 + Math.random() * 900000));
   atualizarTipoPiso();
+  atualizarRodape();
 }
 
 function validarObrigatorios() {
@@ -1669,6 +1724,9 @@ function validarObrigatorios() {
     ["validade", "validade do orçamento"],
     ["piso_m2_cx", "m² por caixa do piso"],
     ["piso_preco_cx", "preço da caixa do piso"],
+    ["rodape_nome", "nome do rodapé"],
+    ["rodape_ml", "metros por barra do rodapé"],
+    ["rodape_preco", "preço da barra do rodapé"],
     ["area", "área total do piso"]
   ];
 
@@ -1695,6 +1753,11 @@ function calcular() {
   const tipoLabel = tipo === "vinilico" ? "Piso Vinílico" : "Piso Laminado";
   const pisoM2Cx = parseFloat(document.getElementById("piso_m2_cx").value) || produto.m2cx;
   const pisoPrecoCx = parseFloat(document.getElementById("piso_preco_cx").value) || produto.precoCx;
+  const rodapeBase = getRodapeSelecionado();
+  const rodapeNome = document.getElementById("rodape_nome").value.trim() || rodapeBase.nome || "Rodapé";
+  const rodapeMarca = rodapeBase.marca || "Manual";
+  const rodapeMl = parseFloat(document.getElementById("rodape_ml").value) || rodapeBase.ml;
+  const rodapePreco = parseFloat(document.getElementById("rodape_preco").value) || rodapeBase.preco;
   const cliente = document.getElementById("cliente").value.trim();
   const endereco = document.getElementById("endereco").value.trim();
   const telefone = document.getElementById("telefone").value.trim();
@@ -1711,6 +1774,16 @@ function calcular() {
     document.getElementById("piso_m2_cx").focus();
     return;
   }
+  if (!rodapeMl || rodapeMl <= 0) {
+    alert("Informe quantos metros vem em cada barra do rodapé para continuar.");
+    document.getElementById("rodape_ml").focus();
+    return;
+  }
+  if (!rodapePreco || rodapePreco <= 0) {
+    alert("Informe o preço da barra do rodapé para continuar.");
+    document.getElementById("rodape_preco").focus();
+    return;
+  }
 
   const areaComPerda = area * (1 + PRECO.piso_perda);
   const caixas = arredondarQtd(areaComPerda / pisoM2Cx);
@@ -1719,10 +1792,10 @@ function calcular() {
   const usandoEstimativa = perimRaw === "";
   const perimetro = usandoEstimativa ? area : parseFloat(perimRaw);
   const baseRodape = tipo === "vinilico" ? areaComPerda : perimetro;
-  const barrasBase = arredondarQtd(baseRodape / PRECO.rod_ml);
+  const barrasBase = arredondarQtd(baseRodape / rodapeMl);
   const barrasExtras = tipo === "vinilico" ? PRECO.rod_extra_vinilico : 0;
   const barras = barrasBase + barrasExtras;
-  const totalRod = barras * PRECO.rod_preco;
+  const totalRod = barras * rodapePreco;
 
   const metrosManta = tipo === "laminado" ? arredondarQtd(area) : 0;
   const rolosManta = tipo === "laminado" ? arredondarQtd(metrosManta / PRECO.manta_m2_rolo) : 0;
@@ -1756,6 +1829,10 @@ function calcular() {
     produtoNome: produto.nome,
     produtoMarca: produto.marca,
     pisoM2Cx,
+    rodapeNome,
+    rodapeMarca,
+    rodapeMl,
+    rodapePreco,
     area,
     areaComPerda,
     perimetro,
@@ -1807,7 +1884,7 @@ function calcular() {
 
   const linhas = [
     row(produto.nome, produto.marca, `${caixas} caixas`, `${areaComPerda.toFixed(1)} m² com perda técnica incluída`),
-    row("Rodapé Supreme 5 cm Branco", "Madebene", `${barras} barras`, tipo === "vinilico" ? `${baseRodape.toFixed(1)} m base + ${barrasExtras} barras extras` : `${perimetro.toFixed(1)} m lineares${usandoEstimativa ? " (estimativa)" : ""}`),
+    row(rodapeNome, rodapeMarca, `${barras} barras`, tipo === "vinilico" ? `${baseRodape.toFixed(1)} m base + ${barrasExtras} barras extras` : `${perimetro.toFixed(1)} m lineares${usandoEstimativa ? " (estimativa)" : ""}`),
   ];
 
   if (tipo === "laminado") {
