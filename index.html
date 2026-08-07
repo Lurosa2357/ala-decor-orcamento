@@ -612,8 +612,11 @@
           <option value="durafloor_new_way">Durafloor New Way 7mm - 2,51 m²/cx</option>
           <option value="durafloor_new_nature">Durafloor New Nature 7mm - 2,51 m²/cx</option>
           <option value="durafloor_studio">Durafloor Studio 8mm - 2,26 m²/cx</option>
+          <option value="durafloor_unique">Durafloor Unique 8mm - 2,73 m²/cx</option>
+          <option value="durafloor_spot">Durafloor Spot - 2,51 m²/cx</option>
           <option value="quick_step_new_premiere">Quick-Step New Premiere AC4 - 2,84 m²/cx</option>
           <option value="quick_step_new_smart">Quick-Step New Smart AC4 - 2,51 m²/cx</option>
+          <option value="start_floor_laminado">Start Floor Laminado - preencher manual</option>
         </select>
       </div>
       <div class="form-group conditional-field is-hidden" id="campo_marca_vinilico">
@@ -621,10 +624,21 @@
         <select id="marca_vinilico" onchange="atualizarTipoPiso()">
           <option value="ecomax_ecohome">Ecomax Eco Home Colado 2mm - 4,4593 m²/cx</option>
           <option value="durafloor_urban">Durafloor Urban Colado 2mm - 4,34 m²/cx</option>
+          <option value="durafloor_urban_45">Durafloor Urban Colado 2mm - 4,50 m²/cx</option>
           <option value="durafloor_city">Durafloor City Colado 3mm - 3,25 m²/cx</option>
+          <option value="durafloor_art_325">Durafloor Art Colado 3mm - 3,25 m²/cx</option>
+          <option value="durafloor_art_3364">Durafloor Art Colado 3mm - 3,364 m²/cx</option>
+          <option value="eucafloor_lvt_basic_reguas">Eucafloor LVT Basic Réguas 2mm - 4,68 m²/cx</option>
+          <option value="eucafloor_lvt_working_reguas">Eucafloor LVT Working+ Réguas 3mm - 3,34 m²/cx</option>
           <option value="tarkett_injoy">Tarkett Ínjoy 2mm - 4,09 m²/cx</option>
           <option value="tarkett_essence_30">Tarkett Essence 30 - 4,09 m²/cx</option>
+          <option value="start_floor_vinilico">Start Floor Vinílico - preencher manual</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label>M² por Caixa</label>
+        <input type="number" id="piso_m2_cx" placeholder="Ex: 2,36" min="0.01" step="0.0001" required>
+        <span class="hint">O sistema sugere pela marca escolhida. Para Start Floor, preencha manualmente.</span>
       </div>
       <div class="form-group">
         <label>Preço da Caixa do Piso (R$)</label>
@@ -983,25 +997,35 @@ const PRECO = {
 
 const PRODUTOS = {
   laminado: {
-    eucafloor_prime_click: {nome: "Piso Laminado Prime Click 8mm", marca: "Eucafloor", m2cx: 2.36, precoCx: 111.60},
-    durafloor_new_way: {nome: "Piso Laminado New Way 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 123.00},
-    durafloor_new_nature: {nome: "Piso Laminado New Nature 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 155.00},
-    durafloor_studio: {nome: "Piso Laminado Studio 8mm", marca: "Durafloor", m2cx: 2.26, precoCx: 169.00},
+    eucafloor_prime_click: {nome: "Piso Laminado Prime Click 8mm", marca: "Eucafloor", m2cx: 2.36, precoCx: 119.12},
+    durafloor_new_way: {nome: "Piso Laminado New Way 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 137.35},
+    durafloor_new_nature: {nome: "Piso Laminado New Nature 7mm", marca: "Durafloor", m2cx: 2.51, precoCx: 167.27},
+    durafloor_studio: {nome: "Piso Laminado Studio 8mm", marca: "Durafloor", m2cx: 2.26, precoCx: 191.60},
+    durafloor_unique: {nome: "Piso Laminado Unique 8mm", marca: "Durafloor", m2cx: 2.73, precoCx: 231.94},
+    durafloor_spot: {nome: "Piso Laminado Spot", marca: "Durafloor", m2cx: 2.51, precoCx: 137.35},
     quick_step_new_premiere: {nome: "Piso Laminado New Premiere AC4", marca: "Quick-Step", m2cx: 2.84, precoCx: 156.33},
     quick_step_new_smart: {nome: "Piso Laminado New Smart AC4", marca: "Quick-Step", m2cx: 2.51, precoCx: 185.00},
+    start_floor_laminado: {nome: "Piso Laminado Start Floor", marca: "Start Floor", m2cx: 0, precoCx: 0},
   },
   vinilico: {
-    ecomax_ecohome: {nome: "Piso Vinílico Eco Home Colado 2mm", marca: "Ecomax", m2cx: 4.4593, precoCx: 205.00},
-    durafloor_urban: {nome: "Piso Vinílico Urban Colado 2mm", marca: "Durafloor", m2cx: 4.34, precoCx: 368.00},
-    durafloor_city: {nome: "Piso Vinílico City Colado 3mm", marca: "Durafloor", m2cx: 3.25, precoCx: 404.80},
+    ecomax_ecohome: {nome: "Piso Vinílico Eco Home Colado 2mm", marca: "Ecomax", m2cx: 4.4593, precoCx: 218.06},
+    durafloor_urban: {nome: "Piso Vinílico Urban Colado 2mm", marca: "Durafloor", m2cx: 4.34, precoCx: 434.11},
+    durafloor_urban_45: {nome: "Piso Vinílico Urban Colado 2mm", marca: "Durafloor", m2cx: 4.50, precoCx: 450.50},
+    durafloor_city: {nome: "Piso Vinílico City Colado 3mm", marca: "Durafloor", m2cx: 3.25, precoCx: 450.21},
+    durafloor_art_325: {nome: "Piso Vinílico Art Colado 3mm", marca: "Durafloor", m2cx: 3.25, precoCx: 494.51},
+    durafloor_art_3364: {nome: "Piso Vinílico Art Colado 3mm", marca: "Durafloor", m2cx: 3.364, precoCx: 460.00},
+    eucafloor_lvt_basic_reguas: {nome: "Piso Vinílico LVT Basic Réguas 2mm", marca: "Eucafloor", m2cx: 4.68, precoCx: 233.53},
+    eucafloor_lvt_working_reguas: {nome: "Piso Vinílico LVT Working+ Réguas", marca: "Eucafloor", m2cx: 3.34, precoCx: 308.70},
     tarkett_injoy: {nome: "Piso Vinílico Ínjoy 2mm", marca: "Tarkett", m2cx: 4.09, precoCx: 260.34},
     tarkett_essence_30: {nome: "Piso Vinílico Essence 30", marca: "Tarkett", m2cx: 4.09, precoCx: 403.14},
+    start_floor_vinilico: {nome: "Piso Vinílico Start Floor", marca: "Start Floor", m2cx: 0, precoCx: 0},
   }
 };
 
 let ultimoOrcamento = null;
 let ultimoContrato = null;
 let limparImpressaoContratoTimer = null;
+let ultimaMetragemCaixaSugerida = null;
 let ultimoPrecoCaixaSugerido = null;
 let ultimaMaoObraSugerida = null;
 const HISTORICO_KEY = "alaDecorOrcamentos";
@@ -1086,10 +1110,13 @@ function arredondarQtd(valor) {
 
 function atualizarTipoPiso() {
   const {tipo, produto} = getProdutoSelecionado();
+  const campoM2Cx = document.getElementById("piso_m2_cx");
   const campoPrecoCx = document.getElementById("piso_preco_cx");
   const campoMaoObra = document.getElementById("mao_obra");
+  const metragemSugerida = produto.m2cx || 0;
   const precoSugerido = produto.precoCx;
   const maoObraSugerida = tipo === "vinilico" ? PRECO.mao_obra_vinilico : PRECO.mao_obra_laminado;
+  const metragemAtual = parseFloat(campoM2Cx.value);
   const precoAtual = parseFloat(campoPrecoCx.value);
   const maoObraAtual = parseFloat(campoMaoObra.value);
   document.getElementById("campo_marca_laminado").classList.toggle("is-hidden", tipo !== "laminado");
@@ -1098,12 +1125,18 @@ function atualizarTipoPiso() {
   document.getElementById("campo_portas").classList.toggle("is-hidden", tipo === "vinilico");
   document.getElementById("perimetro").value = "";
   if (tipo === "vinilico") document.getElementById("portas").value = 0;
+  if (metragemSugerida > 0 && (!campoM2Cx.value.trim() || (ultimaMetragemCaixaSugerida !== null && Math.abs(metragemAtual - ultimaMetragemCaixaSugerida) < 0.0001))) {
+    campoM2Cx.value = String(metragemSugerida);
+  } else if (metragemSugerida <= 0 && (ultimaMetragemCaixaSugerida !== null && Math.abs(metragemAtual - ultimaMetragemCaixaSugerida) < 0.0001)) {
+    campoM2Cx.value = "";
+  }
   if (!campoPrecoCx.value.trim() || (ultimoPrecoCaixaSugerido !== null && Math.abs(precoAtual - ultimoPrecoCaixaSugerido) < 0.005)) {
-    campoPrecoCx.value = precoSugerido.toFixed(2);
+    campoPrecoCx.value = precoSugerido > 0 ? precoSugerido.toFixed(2) : "";
   }
   if (!campoMaoObra.value.trim() || (ultimaMaoObraSugerida !== null && Math.abs(maoObraAtual - ultimaMaoObraSugerida) < 0.005)) {
     campoMaoObra.value = maoObraSugerida.toFixed(2);
   }
+  ultimaMetragemCaixaSugerida = metragemSugerida;
   ultimoPrecoCaixaSugerido = precoSugerido;
   ultimaMaoObraSugerida = maoObraSugerida;
 }
@@ -1634,6 +1667,7 @@ function validarObrigatorios() {
     ["documento", "CPF ou CNPJ"],
     ["orcamento_numero", "número do orçamento"],
     ["validade", "validade do orçamento"],
+    ["piso_m2_cx", "m² por caixa do piso"],
     ["piso_preco_cx", "preço da caixa do piso"],
     ["area", "área total do piso"]
   ];
@@ -1659,6 +1693,7 @@ function calcular() {
   const {tipo, produto} = getProdutoSelecionado();
   const portas = tipo === "vinilico" ? 0 : Math.max(0, parseInt(document.getElementById("portas").value) || 0);
   const tipoLabel = tipo === "vinilico" ? "Piso Vinílico" : "Piso Laminado";
+  const pisoM2Cx = parseFloat(document.getElementById("piso_m2_cx").value) || produto.m2cx;
   const pisoPrecoCx = parseFloat(document.getElementById("piso_preco_cx").value) || produto.precoCx;
   const cliente = document.getElementById("cliente").value.trim();
   const endereco = document.getElementById("endereco").value.trim();
@@ -1671,9 +1706,14 @@ function calcular() {
     alert("Informe a área total do piso (m²) para continuar.");
     return;
   }
+  if (!pisoM2Cx || pisoM2Cx <= 0) {
+    alert("Informe quantos m² vem em cada caixa do piso para continuar.");
+    document.getElementById("piso_m2_cx").focus();
+    return;
+  }
 
   const areaComPerda = area * (1 + PRECO.piso_perda);
-  const caixas = arredondarQtd(areaComPerda / produto.m2cx);
+  const caixas = arredondarQtd(areaComPerda / pisoM2Cx);
   const totalPiso = caixas * pisoPrecoCx;
 
   const usandoEstimativa = perimRaw === "";
@@ -1715,6 +1755,7 @@ function calcular() {
     tipoLabel,
     produtoNome: produto.nome,
     produtoMarca: produto.marca,
+    pisoM2Cx,
     area,
     areaComPerda,
     perimetro,
