@@ -952,7 +952,7 @@ Mao de obra especializada com instalacao completa</textarea>
         </div>
         <div class="res-actions">
           <button class="btn-reset" onclick="editarContrato()" type="button">Editar</button>
-          <button class="btn-whatsapp" onclick="enviarContratoWhatsApp()" type="button">Enviar WhatsApp</button>
+          <button class="btn-whatsapp" onclick="enviarContratoWhatsApp()" type="button">Salvar PDF + WhatsApp</button>
           <button class="btn-print" onclick="imprimirContrato()" type="button">Imprimir / PDF</button>
         </div>
       </div>
@@ -1252,7 +1252,7 @@ function renderizarContratos() {
       <div class="history-actions">
         <button class="btn-reset btn-small" onclick="editarContratoSalvo('${item.id}')">Editar</button>
         <button class="btn-print btn-small" onclick="imprimirContratoSalvo('${item.id}')">PDF</button>
-        <button class="btn-whatsapp btn-small" onclick="enviarContratoSalvoWhatsApp('${item.id}')">WhatsApp</button>
+        <button class="btn-whatsapp btn-small" onclick="enviarContratoSalvoWhatsApp('${item.id}')">PDF + WhatsApp</button>
         <button class="btn-danger btn-small" onclick="apagarContrato('${item.id}')">Apagar</button>
       </div>
     </div>
@@ -1294,19 +1294,16 @@ function imprimirContratoSalvo(id) {
   ultimoContrato = contrato;
   document.getElementById("contract-print-text").innerHTML = montarContratoHTML(contrato);
   document.getElementById("contract-sign-client").textContent = contrato.cliente;
-  document.body.classList.add("printing-contract");
-  window.removeEventListener("afterprint", limparModoImpressaoContrato);
-  window.addEventListener("afterprint", limparModoImpressaoContrato, { once: true });
-  setTimeout(() => {
-    window.print();
-    limparImpressaoContratoTimer = setTimeout(limparModoImpressaoContrato, 10000);
-  }, 80);
+  abrirTelaPDFContrato();
 }
 
 function enviarContratoSalvoWhatsApp(id) {
   const contrato = carregarContratos().find(item => item.id === id);
   if (!contrato) return;
-  window.open("https://wa.me/?text=" + encodeURIComponent(montarContratoTexto(contrato)), "_blank");
+  ultimoContrato = contrato;
+  document.getElementById("contract-print-text").innerHTML = montarContratoHTML(contrato);
+  document.getElementById("contract-sign-client").textContent = contrato.cliente;
+  prepararContratoParaWhatsApp(contrato);
 }
 
 function apagarContrato(id) {
@@ -1675,12 +1672,36 @@ function gerarContrato() {
 function imprimirContrato() {
   gerarContrato();
   if (!ultimoContrato) return;
+  abrirTelaPDFContrato();
+}
+
+function abrirTelaPDFContrato() {
   document.body.classList.add("printing-contract");
   window.removeEventListener("afterprint", limparModoImpressaoContrato);
   window.addEventListener("afterprint", limparModoImpressaoContrato, { once: true });
   setTimeout(() => {
     window.print();
     limparImpressaoContratoTimer = setTimeout(limparModoImpressaoContrato, 10000);
+  }, 150);
+}
+
+function mensagemCurtaContrato(c) {
+  return "Olá " + c.cliente + ", segue anexo o seu contrato.";
+}
+
+function abrirWhatsAppContrato(c) {
+  window.open("https://wa.me/?text=" + encodeURIComponent(mensagemCurtaContrato(c)), "_blank");
+}
+
+function prepararContratoParaWhatsApp(c) {
+  alert("Na próxima tela, salve o contrato em PDF. Depois anexe esse PDF no WhatsApp que será aberto com a mensagem pronta.");
+  document.body.classList.add("printing-contract");
+  window.removeEventListener("afterprint", limparModoImpressaoContrato);
+  window.addEventListener("afterprint", limparModoImpressaoContrato, { once: true });
+  setTimeout(() => {
+    window.print();
+    limparImpressaoContratoTimer = setTimeout(limparModoImpressaoContrato, 10000);
+    setTimeout(() => abrirWhatsAppContrato(c), 300);
   }, 150);
 }
 
@@ -1696,7 +1717,7 @@ function limparModoImpressaoContrato() {
 function enviarContratoWhatsApp() {
   gerarContrato();
   if (!ultimoContrato) return;
-  window.open("https://wa.me/?text=" + encodeURIComponent(montarContratoTexto(ultimoContrato)), "_blank");
+  prepararContratoParaWhatsApp(ultimoContrato);
 }
 
 function prepararCamposIniciais() {
