@@ -671,8 +671,13 @@
       <div class="section-sep">Medidas da Planta</div>
       <div class="form-group">
         <label>Área Total do Piso (m²) *</label>
-        <input type="number" id="area" placeholder="Ex: 30" min="1" step="0.5" required>
+        <input type="number" id="area" placeholder="Ex: 30" min="1" step="0.5" required oninput="atualizarAreaComPerda()">
         <span class="hint">Soma de todos os cômodos que receberão o piso escolhido.</span>
+      </div>
+      <div class="form-group">
+        <label>Área com 10% de Perda</label>
+        <input type="number" id="area_perda" placeholder="Calculado automaticamente" readonly>
+        <span class="hint">Usada para calcular as caixas do piso e o rodapé do vinílico.</span>
       </div>
       <div class="form-group is-hidden" id="campo_perimetro">
         <label>Perímetro Total (metros lineares)</label>
@@ -822,6 +827,7 @@
       </div>
       <div class="res-actions">
         <button class="btn-reset" onclick="resetar()">Novo</button>
+        <button class="btn-print" onclick="editarUltimoOrcamento()">Editar</button>
         <button class="btn-whatsapp" onclick="enviarWhatsApp()">Enviar WhatsApp</button>
         <button class="btn-print" onclick="window.print()">Imprimir / PDF</button>
       </div>
@@ -1104,6 +1110,12 @@ function atualizarPrecosInternos() {
   PRECO.frete = numeroCampo("preco_frete") || PRECO.frete;
 }
 
+function atualizarAreaComPerda() {
+  const campo = document.getElementById("area_perda");
+  const area = numeroCampo("area");
+  campo.value = area > 0 ? (area * (1 + PRECO.piso_perda)).toFixed(2) : "";
+}
+
 function getRodapeSelecionado() {
   const chave = document.getElementById("rodape_modelo").value;
   return RODAPES[chave] || RODAPES.manual;
@@ -1161,7 +1173,7 @@ function arredondarQtd(valor) {
 }
 
 function atualizarTipoPiso() {
-  const {tipo, produto} = getProdutoSelecionado();
+  const {tipo, chave, produto} = getProdutoSelecionado();
   const campoM2Cx = document.getElementById("piso_m2_cx");
   const campoPrecoCx = document.getElementById("piso_preco_cx");
   const campoMaoObra = document.getElementById("mao_obra");
@@ -1417,6 +1429,58 @@ function apagarOrcamento(id) {
   renderizarHistorico();
 }
 
+function selecionarPorProdutoSalvo(orcamento) {
+  const tipo = orcamento.tipo || "laminado";
+  const campo = tipo === "vinilico" ? "marca_vinilico" : "marca_laminado";
+  const select = document.getElementById(campo);
+  const chaveSalva = orcamento.produtoChave;
+  if (chaveSalva && PRODUTOS[tipo] && PRODUTOS[tipo][chaveSalva]) {
+    select.value = chaveSalva;
+    return;
+  }
+
+  const encontrado = Object.entries(PRODUTOS[tipo] || {}).find(([, produto]) =>
+    produto.nome === orcamento.produtoNome && produto.marca === orcamento.produtoMarca
+  );
+  if (encontrado) select.value = encontrado[0];
+}
+
+function editarOrcamento(orcamento) {
+  if (!orcamento) return;
+  document.getElementById("cliente").value = orcamento.cliente || "";
+  document.getElementById("endereco").value = orcamento.endereco || "";
+  document.getElementById("telefone").value = orcamento.telefone || "";
+  document.getElementById("documento").value = orcamento.documento || "";
+  document.getElementById("orcamento_numero").value = orcamento.orcamentoNumero || "";
+  document.getElementById("validade").value = orcamento.validade || "";
+  document.getElementById("tipo_piso").value = orcamento.tipo || "laminado";
+  selecionarPorProdutoSalvo(orcamento);
+  atualizarTipoPiso();
+  if (orcamento.pisoM2Cx) document.getElementById("piso_m2_cx").value = orcamento.pisoM2Cx;
+  if (orcamento.pisoPrecoCx) document.getElementById("piso_preco_cx").value = orcamento.pisoPrecoCx;
+  document.getElementById("rodape_modelo").value = orcamento.rodapeModelo || "madebene_supreme_5";
+  atualizarRodape();
+  if (orcamento.rodapeNome) document.getElementById("rodape_nome").value = orcamento.rodapeNome;
+  if (orcamento.rodapeMl) document.getElementById("rodape_ml").value = orcamento.rodapeMl;
+  if (orcamento.rodapePreco) document.getElementById("rodape_preco").value = orcamento.rodapePreco;
+  document.getElementById("area").value = orcamento.area || "";
+  atualizarAreaComPerda();
+  document.getElementById("perimetro").value = orcamento.usandoEstimativa ? "" : (orcamento.perimetro || "");
+  document.getElementById("portas").value = orcamento.portas || 0;
+  if (orcamento.maoObraValor) document.getElementById("mao_obra").value = orcamento.maoObraValor;
+  document.getElementById("results").classList.remove("visible");
+  window.scrollTo({top: 0, behavior: "smooth"});
+}
+
+function editarOrcamentoSalvo(id) {
+  const orcamento = carregarHistorico().find(item => item.id === id);
+  editarOrcamento(orcamento);
+}
+
+function editarUltimoOrcamento() {
+  editarOrcamento(ultimoOrcamento);
+}
+
 function renderizarHistorico() {
   const alvo = document.getElementById("history-list");
   const lista = carregarHistorico();
@@ -1436,6 +1500,7 @@ function renderizarHistorico() {
         <div class="history-value">${fmt(item.totalGeral)}</div>
       </div>
       <div class="history-actions">
+        <button class="btn-print btn-small" onclick="editarOrcamentoSalvo('${item.id}')">Editar</button>
         <button class="btn-print btn-small" onclick="imprimirOrcamentoSalvo('${item.id}')">PDF</button>
         <button class="btn-print btn-small" onclick="preencherContratoDoOrcamento('${item.id}')">Contrato</button>
         <button class="btn-whatsapp btn-small" onclick="abrirWhatsAppComOrcamento('${item.id}')">WhatsApp</button>
@@ -1764,6 +1829,7 @@ function validarObrigatorios() {
 function calcular() {
   if (!validarObrigatorios()) return;
   atualizarPrecosInternos();
+  atualizarAreaComPerda();
 
   const area = parseFloat(document.getElementById("area").value);
   const perimRaw = document.getElementById("perimetro").value.trim();
@@ -1845,10 +1911,13 @@ function calcular() {
     validade,
     tipo,
     tipoLabel,
+    produtoChave: chave,
     produtoNome: produto.nome,
     produtoMarca: produto.marca,
     pisoM2Cx,
+    pisoPrecoCx,
     rodapeNome,
+    rodapeModelo: document.getElementById("rodape_modelo").value,
     rodapeMarca,
     rodapeMl,
     rodapePreco,
@@ -1865,6 +1934,7 @@ function calcular() {
     unidPrego,
     sacosAutonivelante,
     baldesPrimer,
+    maoObraValor,
     totalGeral
   };
   salvarOrcamento(ultimoOrcamento);
