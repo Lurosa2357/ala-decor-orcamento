@@ -1850,7 +1850,7 @@ function calcular() {
 
   const area = parseFloat(document.getElementById("area").value);
   const perimRaw = document.getElementById("perimetro").value.trim();
-  const {tipo, produto} = getProdutoSelecionado();
+  const {tipo, chave, produto} = getProdutoSelecionado();
   const portas = tipo === "vinilico" ? 0 : Math.max(0, parseInt(document.getElementById("portas").value) || 0);
   const tipoLabel = tipo === "vinilico" ? "Piso Vinílico" : "Piso Laminado";
   const pisoM2Cx = parseFloat(document.getElementById("piso_m2_cx").value) || produto.m2cx;
