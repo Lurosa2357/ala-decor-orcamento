@@ -391,12 +391,12 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 28px;
-    margin-top: 28px;
+    margin-top: 56px;
     text-align: center;
   }
   .contract-sign-lines div {
     border-top: 1px solid var(--text);
-    padding-top: 8px;
+    padding-top: 12px;
   }
 
   @media print {
@@ -483,6 +483,19 @@
     .contract-text .contract-field-gap { margin-top: 12px; }
     .contract-text .contract-list { margin-left: 28px; }
     .contract-text .contract-payment th, .contract-text .contract-payment td { padding: 7px 9px; font-size: 12px; }
+    .contract-page-break {
+      break-before: page;
+      page-break-before: always;
+      padding-top: 70px;
+    }
+    .contract-page-break h3 { margin-top: 0; }
+    .contract-text .contract-sign-lines {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      margin-top: 110px;
+      gap: 58px;
+    }
+    .contract-text .contract-sign-lines div { padding-top: 14px; }
     .contract-sign { display: none; grid-template-columns: 1fr 1fr; gap: 44px; padding: 28px 58px 0; text-align: center; font-size: 12px; }
     .contract-sign div { border-top: 1px solid var(--text); padding-top: 9px; }
     body:not(.printing-contract) .input-section,
@@ -1661,6 +1674,7 @@ function montarContratoHTML(c) {
     `<p>Estao incluidos neste contrato os seguintes servicos e materiais:</p>`,
     `<ul class="contract-list">${escopoHtml}</ul>`,
     c.observacoes ? `<p>${esc(c.observacoes)}</p>` : "",
+    `<div class="contract-page-break">`,
     `<h3>Clausula 3 - Do Prazo e Inicio</h3>`,
     `<p>O inicio da execucao do servico esta agendado para o dia <strong>${esc(inicioTexto)}</strong>.</p>`,
     `<p>O prazo estimado para conclusao e de <strong>${esc(c.prazo)}</strong> apos o inicio, condicionado a liberacao do local e confirmacao do pagamento de entrada.</p>`,
@@ -1677,7 +1691,8 @@ function montarContratoHTML(c) {
     `<p>O CONTRATANTE deve garantir acesso ao local, ambiente livre de obstaculos e fornecimento de energia eletrica. Cancelamentos de data agendada com menos de 24h geram taxa de R$ 500,00.</p>`,
     `<h3>Clausula 7 - Do Foro e Assinatura Eletronica</h3>`,
     `<p>Fica eleito o foro da comarca de Sao Paulo/SP. Este contrato e valido via assinatura eletronica (MP no 2.200-2/2001).</p>`,
-    `<div class="contract-sign-lines"><div>CONTRATANTE<br>${esc(c.cliente)}<br>Data: ____/____/____</div><div>CONTRATADA<br>${esc(CONTRATADA_NOME)}<br>Data: ____/____/____</div></div>`
+    `<div class="contract-sign-lines"><div>CONTRATANTE<br>${esc(c.cliente)}<br>Data: ____/____/____</div><div>CONTRATADA<br>${esc(CONTRATADA_NOME)}<br>Data: ____/____/____</div></div>`,
+    `</div>`
   ].filter(Boolean).join("");
 }
 
