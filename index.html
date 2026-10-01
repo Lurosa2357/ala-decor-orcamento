@@ -928,7 +928,7 @@
           <input type="number" id="contrato_entrada_valor" placeholder="Ex: 2700,00" min="0" step="0.01" oninput="atualizarPercentualContrato()">
         </div>
         <div class="form-group">
-          <label>Forma da Entrada</label>
+          <label>Forma de Pagamento</label>
           <select id="contrato_entrada_forma">
             <option value="Pix">Pix</option>
             <option value="Dinheiro">Dinheiro</option>
@@ -1267,6 +1267,13 @@ function salvarContrato(contrato) {
   renderizarContratos();
 }
 
+function resumoPagamentoContrato(c) {
+  const integralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
+  return integralCartao
+    ? "pagamento integral no " + c.formaEntrada
+    : "entrada " + c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "% (" + fmt(c.valorEntrada) + ")";
+}
+
 function renderizarContratos() {
   const alvo = document.getElementById("contracts-list");
   if (!alvo) return;
@@ -1282,7 +1289,7 @@ function renderizarContratos() {
       <div>
         <div class="history-title">${esc(item.cliente)}</div>
         <div class="history-meta">${esc(item.servico)} - ${item.criadoEm}</div>
-        <div class="history-meta">${esc(item.telefone)} - entrada ${item.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}% (${fmt(item.valorEntrada)})</div>
+        <div class="history-meta">${esc(item.telefone)} - ${resumoPagamentoContrato(item)}</div>
         <div class="history-value">${fmt(item.valorTotal)}</div>
       </div>
       <div class="history-actions">
@@ -1614,6 +1621,8 @@ function dadosContrato() {
   const valorTotal = numeroCampo("contrato_valor");
   const valorEntrada = Math.max(0, Math.min(valorTotal, numeroCampo("contrato_entrada_valor")));
   const percentualEntrada = valorTotal ? (valorEntrada / valorTotal) * 100 : 0;
+  const formaPagamento = document.getElementById("contrato_entrada_forma").value;
+  const pagamentoIntegralCartao = valorEntrada === 0 && formaPagamento.toLowerCase().includes("cartao");
   const escopo = document.getElementById("contrato_escopo").value
     .split(/\r?\n/)
     .map(item => item.trim())
@@ -1631,7 +1640,8 @@ function dadosContrato() {
     percentualEntrada,
     valorEntrada,
     saldo: Math.max(0, valorTotal - valorEntrada),
-    formaEntrada: document.getElementById("contrato_entrada_forma").value,
+    formaEntrada: formaPagamento,
+    pagamentoIntegralCartao,
     inicio: document.getElementById("contrato_inicio").value,
     prazo: document.getElementById("contrato_prazo").value.trim() || "a combinar",
     servico: document.getElementById("contrato_servico").value.trim(),
@@ -1648,6 +1658,14 @@ function montarContratoHTML(c) {
     ? `<div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto)}</span></div>`
     : "";
   const escopoHtml = c.escopo.map(item => `<li>${esc(item)};</li>`).join("");
+  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
+  const pagamentoHtml = pagamentoIntegralCartao
+    ? `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Pagamento integral no ${esc(c.formaEntrada)}</td><td>${fmt(c.valorTotal)}</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`
+    : `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Entrada (${c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}%)</td><td>${fmt(c.valorEntrada)} (${esc(c.formaEntrada)})</td></tr><tr><td>Saldo restante</td><td>${fmt(c.saldo)} (pago apos a finalizacao da obra)</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`;
+  const pixHtml = pagamentoIntegralCartao
+    ? ""
+    : `<p><strong>Dados para Pix:</strong><br>Pix CNPJ: ${esc(CONTRATADA_CNPJ)}<br>Titular: ${esc(PIX_TITULAR)}<br>Banco: ${esc(PIX_BANCO)}</p>`;
+  const condicaoInicio = pagamentoIntegralCartao ? "confirmacao do pagamento no cartao" : "confirmacao do pagamento de entrada";
   return [
     `<h3>1. Das Partes</h3>`,
     `<div class="contract-parties">
@@ -1677,11 +1695,11 @@ function montarContratoHTML(c) {
     `<div class="contract-page-break">`,
     `<h3>Clausula 3 - Do Prazo e Inicio</h3>`,
     `<p>O inicio da execucao do servico esta agendado para o dia <strong>${esc(inicioTexto)}</strong>.</p>`,
-    `<p>O prazo estimado para conclusao e de <strong>${esc(c.prazo)}</strong> apos o inicio, condicionado a liberacao do local e confirmacao do pagamento de entrada.</p>`,
+    `<p>O prazo estimado para conclusao e de <strong>${esc(c.prazo)}</strong> apos o inicio, condicionado a liberacao do local e ${condicaoInicio}.</p>`,
     `<h3>Clausula 4 - Do Valor e Forma de Pagamento</h3>`,
     `<p>O valor total do servico e fixado em <strong>${fmt(c.valorTotal)}</strong>.</p>`,
-    `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Entrada (${c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}%)</td><td>${fmt(c.valorEntrada)} (${esc(c.formaEntrada)})</td></tr><tr><td>Saldo restante</td><td>${fmt(c.saldo)} (pago apos a finalizacao da obra)</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`,
-    `<p><strong>Dados para Pix:</strong><br>Pix CNPJ: ${esc(CONTRATADA_CNPJ)}<br>Titular: ${esc(PIX_TITULAR)}<br>Banco: ${esc(PIX_BANCO)}</p>`,
+    pagamentoHtml,
+    pixHtml,
     `<p>*Parcelamento no cartao sujeito aos juros da operadora.</p>`,
     `<h3>Clausula 5 - Da Garantia</h3>`,
     `<p>Mao de obra: 06 (seis) meses de garantia contra defeitos de instalacao por parte da ALADECOR.</p>`,
@@ -1699,6 +1717,7 @@ function montarContratoHTML(c) {
 function montarContratoTexto(c) {
   const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
   const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
+  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
   return [
     "CONTRATO DE PRESTACAO DE SERVICOS - A.L.A DECOR",
     "",
@@ -1726,11 +1745,11 @@ function montarContratoTexto(c) {
     "",
     "CLAUSULA 4 - DO VALOR E FORMA DE PAGAMENTO",
     "Valor total: " + fmt(c.valorTotal),
-    "Entrada (" + c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "%): " + fmt(c.valorEntrada) + " via " + c.formaEntrada,
-    "Saldo na conclusao: " + fmt(c.saldo),
-    "Pix CNPJ: " + CONTRATADA_CNPJ,
-    "Titular: " + PIX_TITULAR,
-    "Banco: " + PIX_BANCO,
+    pagamentoIntegralCartao ? "Pagamento integral no " + c.formaEntrada + ": " + fmt(c.valorTotal) : "Entrada (" + c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "%): " + fmt(c.valorEntrada) + " via " + c.formaEntrada,
+    pagamentoIntegralCartao ? "" : "Saldo na conclusao: " + fmt(c.saldo),
+    pagamentoIntegralCartao ? "" : "Pix CNPJ: " + CONTRATADA_CNPJ,
+    pagamentoIntegralCartao ? "" : "Titular: " + PIX_TITULAR,
+    pagamentoIntegralCartao ? "" : "Banco: " + PIX_BANCO,
     "",
     "CLAUSULA 5 - DA GARANTIA",
     "Mao de obra: 06 meses. Material: conforme termos do fabricante.",
@@ -1759,7 +1778,7 @@ function gerarContrato() {
   const html = montarContratoHTML(ultimoContrato);
   salvarContrato(ultimoContrato);
   document.getElementById("contract-preview-title").textContent = "Contrato - " + ultimoContrato.cliente;
-  document.getElementById("contract-preview-subtitle").textContent = fmt(ultimoContrato.valorTotal) + " - entrada " + ultimoContrato.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "% (" + fmt(ultimoContrato.valorEntrada) + ") via " + ultimoContrato.formaEntrada;
+  document.getElementById("contract-preview-subtitle").textContent = fmt(ultimoContrato.valorTotal) + " - " + resumoPagamentoContrato(ultimoContrato);
   document.getElementById("contract-preview-box").innerHTML = `<h2>Contrato de Prestacao de Servicos - Aladecor</h2>${html}`;
   document.getElementById("contract-print-text").innerHTML = html;
   document.getElementById("contract-sign-client").textContent = ultimoContrato.cliente;
