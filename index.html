@@ -163,12 +163,14 @@
     border: 1px solid #c4b8f5;
     border-radius: 8px;
     padding: 10px 14px;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .price-ref strong { display: block; font-size: 16px; font-weight: 800; color: var(--purple); }
   .price-ref span { color: var(--muted); font-size: 11px; line-height: 1.4; }
   .price-ref label { display: block; font-size: 11px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: .4px; }
-  .price-ref input { min-height: 36px; margin: 6px 0; padding: 8px 10px; font-size: 14px; font-weight: 800; background: #fff; }
+  .price-ref input { width: 100%; max-width: 100%; min-height: 36px; margin: 6px 0; padding: 8px 10px; font-size: 14px; font-weight: 800; background: #fff; box-sizing: border-box; }
   .is-hidden { display: none !important; }
 
   .actions-row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
@@ -912,7 +914,7 @@
           <input type="text" id="contrato_telefone" placeholder="Ex: (11) 99999-9999">
         </div>
         <div class="form-group">
-          <label>Endereco da Obra</label>
+          <label>Endereço da Obra</label>
           <input type="text" id="contrato_endereco" placeholder="Ex: Rua das Flores, 123 - Apto 42">
         </div>
         <div class="form-group">
@@ -932,36 +934,36 @@
           <select id="contrato_entrada_forma">
             <option value="Pix">Pix</option>
             <option value="Dinheiro">Dinheiro</option>
-            <option value="Cartao de debito">Cartao de debito</option>
-            <option value="Cartao de credito">Cartao de credito</option>
-            <option value="Transferencia bancaria">Transferencia bancaria</option>
+            <option value="Cartão de débito">Cartão de débito</option>
+            <option value="Cartão de crédito">Cartão de crédito</option>
+            <option value="Transferência bancária">Transferência bancária</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Previsao de Inicio</label>
+          <label>Previsão de Início</label>
           <input type="date" id="contrato_inicio">
         </div>
         <div class="form-group">
-          <label>Prazo de Execucao</label>
-          <input type="text" id="contrato_prazo" value="1 a 2 dias uteis">
+          <label>Prazo de Execução</label>
+          <input type="text" id="contrato_prazo" value="1 a 2 dias úteis">
         </div>
         <div class="form-group">
-          <label>Servico Contratado</label>
-          <input type="text" id="contrato_servico" value="Fornecimento e instalacao de piso, com material e mao de obra inclusos">
+          <label>Serviço Contratado</label>
+          <input type="text" id="contrato_servico" value="Fornecimento e instalação de piso, com material e mão de obra inclusos">
         </div>
         <div class="form-group" style="grid-column: 1 / -1;">
-          <label>Escopo do Servico</label>
+          <label>Escopo do Serviço</label>
           <textarea id="contrato_escopo">Piso Laminado Durafloor New Way
-Rodape branco MDF de 7 cm
+Rodapé branco MDF de 7 cm
 Manta
 Prego
 Perfil T
 Perfil Frontal
-Mao de obra especializada com instalacao completa</textarea>
+Mão de obra especializada com instalação completa</textarea>
         </div>
         <div class="form-group" style="grid-column: 1 / -1;">
-          <label>Observacoes</label>
-          <textarea id="contrato_observacoes">Nao incluidos: Remocao de moveis, eletrodomesticos, pisos antigos ou objetos pessoais, bem como corte de portas.</textarea>
+          <label>Observações</label>
+          <textarea id="contrato_observacoes">Não inclusos: Remoção de móveis, eletrodomésticos, pisos antigos ou objetos pessoais, bem como corte de portas.</textarea>
         </div>
       </div>
       <div class="actions-row">
@@ -1003,7 +1005,7 @@ Mao de obra especializada com instalacao completa</textarea>
         a.l.a_decoracoes2025@gmail.com
       </div>
     </div>
-    <div class="contract-title">Contrato de Prestacao de Servicos - Aladecor</div>
+    <div class="contract-title">Contrato de Prestação de Serviços - Aladecor</div>
     <div class="contract-text" id="contract-print-text"></div>
     <div class="contract-sign">
       <div>A.L.A DECOR Pisos Laminados e Vinilicos</div>
@@ -1122,6 +1124,14 @@ function esc(valor) {
 
 function numeroCampo(id) {
   return parseFloat(document.getElementById(id).value.replace(",", ".")) || 0;
+}
+
+function textoSemAcento(valor) {
+  return String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function isPagamentoCartao(forma) {
+  return textoSemAcento(forma).toLowerCase().includes("cartao");
 }
 
 function atualizarPrecosInternos() {
@@ -1268,7 +1278,7 @@ function salvarContrato(contrato) {
 }
 
 function resumoPagamentoContrato(c) {
-  const integralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
+  const integralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && isPagamentoCartao(c.formaEntrada));
   return integralCartao
     ? "pagamento integral no " + c.formaEntrada
     : "entrada " + c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "% (" + fmt(c.valorEntrada) + ")";
@@ -1563,7 +1573,7 @@ function preencherContratoDoOrcamento(id) {
   document.getElementById("contrato_valor").value = (orcamento.totalGeral || 0).toFixed(2);
   document.getElementById("contrato_entrada_percentual").value = 60;
   atualizarEntradaContrato();
-  document.getElementById("contrato_servico").value = "Fornecimento e instalacao de " + (orcamento.produtoNome || orcamento.tipoLabel || "piso") + ", com material e mao de obra inclusos";
+  document.getElementById("contrato_servico").value = "Fornecimento e instalação de " + (orcamento.produtoNome || orcamento.tipoLabel || "piso") + ", com material e mão de obra inclusos";
   document.getElementById("contrato_escopo").value = montarEscopoDoOrcamento(orcamento).join("\n");
   mostrarAba("contratos");
   document.getElementById("contrato_cliente").scrollIntoView({behavior: "smooth", block: "center"});
@@ -1572,7 +1582,7 @@ function preencherContratoDoOrcamento(id) {
 function montarEscopoDoOrcamento(o) {
   const itens = [
     o.produtoNome || o.tipoLabel || "Piso",
-    "Rodape branco MDF de 7 cm"
+    "Rodapé branco MDF de 7 cm"
   ];
   if (o.tipo === "vinilico") {
     itens.push("Autonivelante", "Primer");
@@ -1580,7 +1590,7 @@ function montarEscopoDoOrcamento(o) {
     itens.push("Manta", "Prego");
     if ((o.portas || 0) > 0) itens.push("Perfil T");
   }
-  itens.push("Mao de obra especializada com instalacao completa");
+  itens.push("Mão de obra especializada com instalação completa");
   return itens;
 }
 
@@ -1622,7 +1632,7 @@ function dadosContrato() {
   const valorEntrada = Math.max(0, Math.min(valorTotal, numeroCampo("contrato_entrada_valor")));
   const percentualEntrada = valorTotal ? (valorEntrada / valorTotal) * 100 : 0;
   const formaPagamento = document.getElementById("contrato_entrada_forma").value;
-  const pagamentoIntegralCartao = valorEntrada === 0 && formaPagamento.toLowerCase().includes("cartao");
+  const pagamentoIntegralCartao = valorEntrada === 0 && isPagamentoCartao(formaPagamento);
   const escopo = document.getElementById("contrato_escopo").value
     .split(/\r?\n/)
     .map(item => item.trim())
@@ -1658,14 +1668,14 @@ function montarContratoHTML(c) {
     ? `<div class="contract-field"><strong>Nascimento:</strong><span>${esc(nascimentoTexto)}</span></div>`
     : "";
   const escopoHtml = c.escopo.map(item => `<li>${esc(item)};</li>`).join("");
-  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
+  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && isPagamentoCartao(c.formaEntrada));
   const pagamentoHtml = pagamentoIntegralCartao
-    ? `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Pagamento integral no ${esc(c.formaEntrada)}</td><td>${fmt(c.valorTotal)}</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`
-    : `<table class="contract-payment"><thead><tr><th>Descricao</th><th>Valor</th></tr></thead><tbody><tr><td>Entrada (${c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}%)</td><td>${fmt(c.valorEntrada)} (${esc(c.formaEntrada)})</td></tr><tr><td>Saldo restante</td><td>${fmt(c.saldo)} (pago apos a finalizacao da obra)</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`;
+    ? `<table class="contract-payment"><thead><tr><th>Descrição</th><th>Valor</th></tr></thead><tbody><tr><td>Pagamento integral no ${esc(c.formaEntrada)}</td><td>${fmt(c.valorTotal)}</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`
+    : `<table class="contract-payment"><thead><tr><th>Descrição</th><th>Valor</th></tr></thead><tbody><tr><td>Entrada (${c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2})}%)</td><td>${fmt(c.valorEntrada)} (${esc(c.formaEntrada)})</td></tr><tr><td>Saldo restante</td><td>${fmt(c.saldo)} (pago após a finalização da obra)</td></tr><tr><td><strong>Valor total</strong></td><td><strong>${fmt(c.valorTotal)}</strong></td></tr></tbody></table>`;
   const pixHtml = pagamentoIntegralCartao
     ? ""
     : `<p><strong>Dados para Pix:</strong><br>Pix CNPJ: ${esc(CONTRATADA_CNPJ)}<br>Titular: ${esc(PIX_TITULAR)}<br>Banco: ${esc(PIX_BANCO)}</p>`;
-  const condicaoInicio = pagamentoIntegralCartao ? "confirmacao do pagamento no cartao" : "confirmacao do pagamento de entrada";
+  const condicaoInicio = pagamentoIntegralCartao ? "confirmação do pagamento no cartão" : "confirmação do pagamento de entrada";
   return [
     `<h3>1. Das Partes</h3>`,
     `<div class="contract-parties">
@@ -1675,40 +1685,40 @@ function montarContratoHTML(c) {
         <div class="contract-field"><strong>RG:</strong><span>${esc(c.rg || "Opcional")}</span></div>
         <div class="contract-field"><strong>CPF/CNPJ:</strong><span>${esc(c.documento || "Opcional")}</span></div>
         ${nascimentoHtml}
-        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(c.endereco || "Opcional")}</span></div>
+        <div class="contract-field contract-field-gap"><strong>Endereço:</strong><span>${esc(c.endereco || "Opcional")}</span></div>
         <div class="contract-field"><strong>Telefone:</strong><span>${esc(c.telefone)}</span></div>
       </div>
       <div class="contract-party">
         <strong class="contract-party-title">CONTRATADA:</strong>
         <div class="contract-field"><strong>Empresa:</strong><span>${esc(CONTRATADA_NOME)}</span></div>
         <div class="contract-field"><strong>CNPJ:</strong><span>${esc(CONTRATADA_CNPJ)}</span></div>
-        <div class="contract-field contract-field-gap"><strong>Endereco:</strong><span>${esc(CONTRATADA_ENDERECO)}</span></div>
+        <div class="contract-field contract-field-gap"><strong>Endereço:</strong><span>${esc(CONTRATADA_ENDERECO)}</span></div>
       </div>
     </div>`,
-    `<p>As partes acima identificadas resolvem firmar o presente Contrato de Prestacao de Servicos, regido pelas clausulas abaixo.</p>`,
-    `<h3>Clausula 1 - Do Objeto</h3>`,
-    `<p>O presente contrato tem como objeto a prestacao de servicos de ${esc(c.servico)}, conforme descricao detalhada.</p>`,
-    `<h3>Clausula 2 - Do Escopo do Servico</h3>`,
-    `<p>Estao incluidos neste contrato os seguintes servicos e materiais:</p>`,
+    `<p>As partes acima identificadas resolvem firmar o presente Contrato de Prestação de Serviços, regido pelas cláusulas abaixo.</p>`,
+    `<h3>Cláusula 1 - Do Objeto</h3>`,
+    `<p>O presente contrato tem como objeto a prestação de serviços de ${esc(c.servico)}, conforme descrição detalhada.</p>`,
+    `<h3>Cláusula 2 - Do Escopo do Serviço</h3>`,
+    `<p>Estão incluídos neste contrato os seguintes serviços e materiais:</p>`,
     `<ul class="contract-list">${escopoHtml}</ul>`,
     c.observacoes ? `<p>${esc(c.observacoes)}</p>` : "",
     `<div class="contract-page-break">`,
-    `<h3>Clausula 3 - Do Prazo e Inicio</h3>`,
-    `<p>O inicio da execucao do servico esta agendado para o dia <strong>${esc(inicioTexto)}</strong>.</p>`,
-    `<p>O prazo estimado para conclusao e de <strong>${esc(c.prazo)}</strong> apos o inicio, condicionado a liberacao do local e ${condicaoInicio}.</p>`,
-    `<h3>Clausula 4 - Do Valor e Forma de Pagamento</h3>`,
-    `<p>O valor total do servico e fixado em <strong>${fmt(c.valorTotal)}</strong>.</p>`,
+    `<h3>Cláusula 3 - Do Prazo e Início</h3>`,
+    `<p>O início da execução do serviço está agendado para o dia <strong>${esc(inicioTexto)}</strong>.</p>`,
+    `<p>O prazo estimado para conclusão é de <strong>${esc(c.prazo)}</strong> após o início, condicionado à liberação do local e ${condicaoInicio}.</p>`,
+    `<h3>Cláusula 4 - Do Valor e Forma de Pagamento</h3>`,
+    `<p>O valor total do serviço é fixado em <strong>${fmt(c.valorTotal)}</strong>.</p>`,
     pagamentoHtml,
     pixHtml,
-    `<p>*Parcelamento no cartao sujeito aos juros da operadora.</p>`,
-    `<h3>Clausula 5 - Da Garantia</h3>`,
-    `<p>Mao de obra: 06 (seis) meses de garantia contra defeitos de instalacao por parte da ALADECOR.</p>`,
-    `<p>Material: garantia conforme termos, prazos e condicoes fornecidos exclusivamente pelo fabricante do material. A responsabilidade por defeitos de fabricacao, durabilidade e qualidade do produto e integralmente do fabricante.</p>`,
-    `<p><strong>Exclusoes de Garantia:</strong> Problemas no contrapiso original, umidade, infiltracoes, mau uso, danos causados por arraste de moveis ou limpeza inadequada.</p>`,
-    `<h3>Clausula 6 - Das Obrigacoes do Contratante</h3>`,
-    `<p>O CONTRATANTE deve garantir acesso ao local, ambiente livre de obstaculos e fornecimento de energia eletrica. Cancelamentos de data agendada com menos de 24h geram taxa de R$ 500,00.</p>`,
-    `<h3>Clausula 7 - Do Foro e Assinatura Eletronica</h3>`,
-    `<p>Fica eleito o foro da comarca de Sao Paulo/SP. Este contrato e valido via assinatura eletronica (MP no 2.200-2/2001).</p>`,
+    `<p>*Parcelamento no cartão sujeito aos juros da operadora.</p>`,
+    `<h3>Cláusula 5 - Da Garantia</h3>`,
+    `<p>Mão de obra: 06 (seis) meses de garantia contra defeitos de instalação por parte da ALADECOR.</p>`,
+    `<p>Material: garantia conforme termos, prazos e condições fornecidos exclusivamente pelo fabricante do material. A responsabilidade por defeitos de fabricação, durabilidade e qualidade do produto é integralmente do fabricante.</p>`,
+    `<p><strong>Exclusões de Garantia:</strong> Problemas no contrapiso original, umidade, infiltrações, mau uso, danos causados por arraste de móveis ou limpeza inadequada.</p>`,
+    `<h3>Cláusula 6 - Das Obrigações do Contratante</h3>`,
+    `<p>O CONTRATANTE deve garantir acesso ao local, ambiente livre de obstáculos e fornecimento de energia elétrica. Cancelamentos de data agendada com menos de 24h geram taxa de R$ 500,00.</p>`,
+    `<h3>Cláusula 7 - Do Foro e Assinatura Eletrônica</h3>`,
+    `<p>Fica eleito o foro da comarca de São Paulo/SP. Este contrato é válido via assinatura eletrônica (MP no 2.200-2/2001).</p>`,
     `<div class="contract-sign-lines"><div>CONTRATANTE<br>${esc(c.cliente)}<br>Data: ____/____/____</div><div>CONTRATADA<br>${esc(CONTRATADA_NOME)}<br>Data: ____/____/____</div></div>`,
     `</div>`
   ].filter(Boolean).join("");
@@ -1717,7 +1727,7 @@ function montarContratoHTML(c) {
 function montarContratoTexto(c) {
   const inicioTexto = c.inicio ? dataBR(c.inicio) : "a combinar entre as partes";
   const nascimentoTexto = c.nascimento ? dataBR(c.nascimento) : "";
-  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && String(c.formaEntrada || "").toLowerCase().includes("cartao"));
+  const pagamentoIntegralCartao = c.pagamentoIntegralCartao || (c.valorEntrada === 0 && isPagamentoCartao(c.formaEntrada));
   return [
     "CONTRATO DE PRESTACAO DE SERVICOS - A.L.A DECOR",
     "",
@@ -1727,39 +1737,39 @@ function montarContratoTexto(c) {
     "CPF/CNPJ: " + (c.documento || "Opcional"),
     nascimentoTexto ? "Data de nascimento: " + nascimentoTexto : "",
     "Telefone: " + c.telefone,
-    "Endereco da obra: " + (c.endereco || "Opcional"),
+    "Endereço da obra: " + (c.endereco || "Opcional"),
     "Contratada: " + CONTRATADA_NOME,
     "CNPJ: " + CONTRATADA_CNPJ,
-    "Endereco: " + CONTRATADA_ENDERECO,
+    "Endereço: " + CONTRATADA_ENDERECO,
     "",
-    "CLAUSULA 1 - DO OBJETO",
-    "Servico contratado: " + c.servico,
+    "CLÁUSULA 1 - DO OBJETO",
+    "Serviço contratado: " + c.servico,
     "",
-    "CLAUSULA 2 - DO ESCOPO DO SERVICO",
+    "CLÁUSULA 2 - DO ESCOPO DO SERVIÇO",
     c.escopo.map(item => "- " + item).join("\n"),
     c.observacoes ? "\n" + c.observacoes : "",
     "",
-    "CLAUSULA 3 - DO PRAZO E INICIO",
-    "Previsao de inicio: " + inicioTexto,
+    "CLÁUSULA 3 - DO PRAZO E INÍCIO",
+    "Previsão de início: " + inicioTexto,
     "Prazo estimado: " + c.prazo,
     "",
-    "CLAUSULA 4 - DO VALOR E FORMA DE PAGAMENTO",
+    "CLÁUSULA 4 - DO VALOR E FORMA DE PAGAMENTO",
     "Valor total: " + fmt(c.valorTotal),
     pagamentoIntegralCartao ? "Pagamento integral no " + c.formaEntrada + ": " + fmt(c.valorTotal) : "Entrada (" + c.percentualEntrada.toLocaleString("pt-BR", {maximumFractionDigits: 2}) + "%): " + fmt(c.valorEntrada) + " via " + c.formaEntrada,
-    pagamentoIntegralCartao ? "" : "Saldo na conclusao: " + fmt(c.saldo),
+    pagamentoIntegralCartao ? "" : "Saldo na conclusão: " + fmt(c.saldo),
     pagamentoIntegralCartao ? "" : "Pix CNPJ: " + CONTRATADA_CNPJ,
     pagamentoIntegralCartao ? "" : "Titular: " + PIX_TITULAR,
     pagamentoIntegralCartao ? "" : "Banco: " + PIX_BANCO,
     "",
-    "CLAUSULA 5 - DA GARANTIA",
-    "Mao de obra: 06 meses. Material: conforme termos do fabricante.",
-    "Exclusoes: contrapiso original, umidade, infiltracoes, mau uso, arraste de moveis ou limpeza inadequada.",
+    "CLÁUSULA 5 - DA GARANTIA",
+    "Mão de obra: 06 meses. Material: conforme termos do fabricante.",
+    "Exclusões: contrapiso original, umidade, infiltrações, mau uso, arraste de móveis ou limpeza inadequada.",
     "",
-    "CLAUSULA 6 - DAS OBRIGACOES DO CONTRATANTE",
-    "O contratante deve garantir acesso ao local, ambiente livre de obstaculos e energia eletrica. Cancelamentos com menos de 24h geram taxa de R$ 500,00.",
+    "CLÁUSULA 6 - DAS OBRIGAÇÕES DO CONTRATANTE",
+    "O contratante deve garantir acesso ao local, ambiente livre de obstáculos e energia elétrica. Cancelamentos com menos de 24h geram taxa de R$ 500,00.",
     "",
-    "CLAUSULA 7 - DO FORO E ASSINATURA ELETRONICA",
-    "Fica eleito o foro da comarca de Sao Paulo/SP. Este contrato e valido via assinatura eletronica (MP no 2.200-2/2001).",
+    "CLÁUSULA 7 - DO FORO E ASSINATURA ELETRÔNICA",
+    "Fica eleito o foro da comarca de São Paulo/SP. Este contrato é válido via assinatura eletrônica (MP no 2.200-2/2001).",
     "",
     "A.L.A DECOR - Pisos Vinilicos e Laminados",
     "(11) 97780-3209"
@@ -1779,7 +1789,7 @@ function gerarContrato() {
   salvarContrato(ultimoContrato);
   document.getElementById("contract-preview-title").textContent = "Contrato - " + ultimoContrato.cliente;
   document.getElementById("contract-preview-subtitle").textContent = fmt(ultimoContrato.valorTotal) + " - " + resumoPagamentoContrato(ultimoContrato);
-  document.getElementById("contract-preview-box").innerHTML = `<h2>Contrato de Prestacao de Servicos - Aladecor</h2>${html}`;
+  document.getElementById("contract-preview-box").innerHTML = `<h2>Contrato de Prestação de Serviços - Aladecor</h2>${html}`;
   document.getElementById("contract-print-text").innerHTML = html;
   document.getElementById("contract-sign-client").textContent = ultimoContrato.cliente;
   document.getElementById("contract-preview").classList.add("visible");
@@ -2084,3 +2094,8 @@ renderizarContratos();
 </script>
 </body>
 </html>
+
+
+
+
+
